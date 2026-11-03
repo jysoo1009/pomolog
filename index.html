@@ -2,6 +2,22 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>
+// 이미 기록이나 동기화 코드가 있는 재방문자는 바로 앱으로 보냅니다. (?landing=true 로 대문을 볼 수 있음)
+(function () {
+  try {
+    if (new URLSearchParams(location.search).has('landing')) return;
+    var s = JSON.parse(localStorage.getItem('pomolog.sessions') || '[]');
+    var y = JSON.parse(localStorage.getItem('pomolog.sync') || '{}');
+    var has = (Array.isArray(s) && s.length > 0) || (y && typeof y.code === 'string' && y.code.length > 0);
+    if (has) {
+      var h = location.hash;
+      document.documentElement.style.visibility = 'hidden';
+      location.replace('/app' + (h === '#timer' || h === '#stats' ? h : ''));
+    }
+  } catch (e) {}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="description" content="뽀모도로 타이머와 집중 시간 통계를 한 화면에서 확인하세요.">
@@ -70,13 +86,26 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 .col h3 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-top: 56px; }
 .col p { font-size: 17px; color: var(--gray-4); margin-top: 12px; }
 #features { scroll-margin-top: var(--nav-h); }
+.col p.note { font-size: 12px; line-height: 1.55; color: var(--gray-3); margin-top: 14px; }
+.specs { display: flex; align-items: flex-start; gap: 24px 40px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--gray-2); }
+.specs-label { flex: 0 0 120px; font-size: 14px; font-weight: 400; color: var(--gray-3); padding-top: 8px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; }
+.pill { font-size: 14px; line-height: 1; padding: 10px 15px; border: 1px solid var(--gray-2); border-radius: 999px; color: var(--ink); background: #fff; white-space: nowrap; }
 
 .closing { background: #000; color: #f5f5f7; margin-top: 140px; padding: 120px 22px; text-align: center; }
 .closing h2 { font-size: clamp(36px, 6vw, 72px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.08; }
 .closing .btn { margin-top: 40px; }
 
-footer { background: var(--gray-1); padding: 20px 22px calc(20px + env(safe-area-inset-bottom)); }
-footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray-3); }
+footer { background: var(--gray-1); padding: 32px 22px calc(28px + env(safe-area-inset-bottom)); }
+.foot { max-width: 1080px; margin: 0 auto; }
+.foot-top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--gray-2); }
+.foot-brand { display: flex; align-items: center; gap: 10px; }
+.foot-brand strong { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+.ver { font-size: 11px; line-height: 1; padding: 4px 8px; border: 1px solid var(--gray-2); border-radius: 999px; color: var(--gray-3); letter-spacing: 0; }
+.foot-links { display: flex; gap: 28px; }
+.foot-links a { font-size: 14px; color: var(--gray-4); transition: color .2s; }
+.foot-links a:hover { color: var(--ink); text-decoration: underline; }
+.foot-note { margin-top: 16px; font-size: 12px; color: var(--gray-3); }
 
 @media (max-width: 960px) {
   .h2 { font-size: 40px; }
@@ -97,6 +126,12 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   .col + .col { border-top: 1px solid var(--gray-2); }
   .col h3 { margin-top: 20px; }
   .closing { margin-top: 88px; padding: 88px 18px; }
+  .specs { flex-direction: column; gap: 14px; margin-top: 40px; }
+  .specs-label { flex: none; padding-top: 0; }
+  .pill { padding: 9px 13px; }
+  footer { padding: 28px 18px calc(24px + env(safe-area-inset-bottom)); }
+  .foot-top { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .foot-links { flex-wrap: wrap; gap: 8px 24px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
@@ -105,7 +140,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
 
 <header class="nav">
   <div class="nav-in">
-    <a class="brand" href="/">Pomolog</a>
+    <a class="brand" href="/?landing=true">Pomolog</a>
     <nav class="nav-links" aria-label="바로가기">
       <a href="#features" data-go="features">기능</a>
       <a href="/app">시작하기</a>
@@ -143,7 +178,22 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
           <span class="no">03</span>
           <h3>동기화</h3>
           <p>코드 하나로 PC와 휴대폰의 기록을 합칩니다. 로그인은 필요하지 않습니다.</p>
+          <p class="note">기록은 먼저 이 기기에 저장되고, 동기화를 켜면 코드로 서버에 백업됩니다. 코드를 아는 사람만 기록에 접근할 수 있습니다.</p>
         </div>
+      </div>
+      <div class="specs">
+        <h3 class="specs-label">그 밖의 기능</h3>
+        <ul class="pills">
+          <li class="pill">시간 직접 설정</li>
+          <li class="pill">탭 제목에 남은 시간</li>
+          <li class="pill">완료 알림음</li>
+          <li class="pill">브라우저 알림</li>
+          <li class="pill">새로고침해도 타이머 유지</li>
+          <li class="pill">스페이스바로 시작·정지</li>
+          <li class="pill">작업 이름 기록</li>
+          <li class="pill">7일·30일 그래프</li>
+          <li class="pill">연속 기록</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -154,7 +204,20 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   </section>
 </main>
 
-<footer><p>Pomolog</p></footer>
+<footer>
+  <div class="foot">
+    <div class="foot-top">
+      <div class="foot-brand"><strong>Pomolog</strong><span class="ver">Alpha</span></div>
+      <nav class="foot-links" aria-label="바로가기">
+        <a href="/app">타이머</a>
+        <a href="/app#stats">통계</a>
+        <a href="#features" data-go="features">기능</a>
+        <a href="https://github.com/jysoo1009/pomolog" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+    <p class="foot-note">기록은 이 기기에 저장되며, 동기화를 켠 경우에만 서버에 백업됩니다.</p>
+  </div>
+</footer>
 
 <script>
 (function () {
