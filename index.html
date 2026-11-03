@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#000000">
 <meta name="description" content="뽀모도로 타이머와 집중 시간 통계를 한 화면에서 확인하세요.">
 <title>Pomolog · 뽀모도로 타이머</title>
+<link rel="canonical" href="https://pomolog-alpha.vercel.app/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -26,686 +27,149 @@
 <meta name="twitter:image" content="https://pomolog-alpha.vercel.app/og.png">
 <style>
 :root {
-  --black: #000;
-  --white: #fff;
   --ink: #1d1d1f;
   --gray-1: #f5f5f7;
   --gray-2: #d2d2d7;
   --gray-3: #86868b;
   --gray-4: #424245;
-  --blue: #0066cc;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", "Helvetica Neue", Arial, sans-serif;
   --nav-h: 48px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-body {
-  font-family: var(--font);
-  color: var(--ink);
-  background: var(--white);
-  line-height: 1.47;
-  letter-spacing: -0.01em;
-  -webkit-font-smoothing: antialiased;
-  word-break: keep-all;
-}
-button, input { font: inherit; color: inherit; letter-spacing: inherit; }
-button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+body { font-family: var(--font); color: var(--ink); background: #fff; line-height: 1.47; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; word-break: keep-all; }
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid #0066cc; outline-offset: 3px; }
 
-/* Navigation */
-.nav {
-  position: sticky; top: 0; z-index: 10;
-  height: calc(var(--nav-h) + env(safe-area-inset-top));
-  padding-top: env(safe-area-inset-top);
-  background: rgba(0,0,0,.8);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  color: #f5f5f7;
-}
-.nav-in {
-  max-width: 1080px; height: var(--nav-h); margin: 0 auto; padding: 0 22px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.brand { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; color: #f5f5f7; text-decoration: none; }
+.nav { position: sticky; top: 0; z-index: 10; height: calc(var(--nav-h) + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); background: rgba(0,0,0,.8); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); color: #f5f5f7; }
+.nav-in { max-width: 1080px; height: var(--nav-h); margin: 0 auto; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; }
+.brand { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
 .nav-links { display: flex; gap: 28px; }
-.nav-links a { font-size: 12px; color: rgba(245,245,247,.8); text-decoration: none; transition: color .2s; }
+.nav-links a { font-size: 12px; color: rgba(245,245,247,.8); transition: color .2s; }
 .nav-links a:hover { color: #fff; }
 
-/* Timer (black) */
-.timer {
-  background: var(--black); color: #f5f5f7;
-  min-height: calc(100vh - var(--nav-h));
-  min-height: calc(100svh - var(--nav-h));
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 56px 22px 48px;
-  text-align: center;
-}
-.modes { display: flex; gap: 36px; margin-bottom: 40px; }
-.mode {
-  font-size: 17px; color: var(--gray-3);
-  padding: 6px 0; border-bottom: 1px solid transparent;
-  transition: color .2s, border-color .2s;
-}
-.mode:hover { color: #f5f5f7; }
-.mode[aria-selected="true"] { color: #f5f5f7; border-bottom-color: #f5f5f7; }
+.hero { background: #000; color: #f5f5f7; min-height: calc(100vh - var(--nav-h)); min-height: calc(100svh - var(--nav-h)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 64px 22px; }
+.eyebrow { font-size: 17px; color: var(--gray-3); }
+.title { font-size: clamp(72px, 17vw, 208px); font-weight: 600; line-height: 1; letter-spacing: -0.05em; margin: 20px 0 28px; }
+.sub { font-size: clamp(19px, 2.4vw, 28px); line-height: 1.3; color: #a1a1a6; max-width: 640px; }
+.sub b { color: #f5f5f7; font-weight: 600; }
+.cta { display: flex; gap: 28px; align-items: center; margin-top: 48px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 40px; font-size: 17px; background: #f5f5f7; color: #000; border-radius: 0; transition: background .2s; }
+.btn:hover { background: #fff; }
+.more { font-size: 17px; color: #f5f5f7; border-bottom: 1px solid transparent; padding: 4px 0; transition: border-color .2s; }
+.more:hover { border-bottom-color: #f5f5f7; }
 
-.eyebrow { font-size: 14px; color: var(--gray-3); letter-spacing: 0; min-height: 21px; }
-.time {
-  font-size: clamp(96px, 22vw, 244px);
-  font-weight: 200; line-height: 1; letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
-  margin: 12px 0 28px;
-}
-.bar { width: min(560px, 100%); height: 2px; background: var(--gray-4); position: relative; }
-.bar i { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: #f5f5f7; transition: width .25s linear; }
-
-.task { width: min(560px, 100%); margin-top: 36px; }
-.task input {
-  width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--gray-4);
-  padding: 10px 0; font-size: 17px; text-align: center; color: #f5f5f7; border-radius: 0;
-  transition: border-color .2s;
-}
-.task input::placeholder { color: var(--gray-3); }
-.task input:focus { outline: 0; border-bottom-color: #f5f5f7; }
-
-.actions { display: flex; gap: 12px; margin-top: 36px; align-items: center; }
-.btn {
-  min-width: 148px; height: 48px; padding: 0 28px;
-  font-size: 17px; border-radius: 0; transition: background .2s, color .2s, opacity .2s;
-}
-.btn-main { background: #f5f5f7; color: #000; }
-.btn-main:hover { background: #fff; }
-.btn-sub { border: 1px solid var(--gray-4); color: #f5f5f7; min-width: 96px; }
-.btn-sub:hover { border-color: #f5f5f7; }
-
-.settings {
-  margin-top: 64px; width: min(760px, 100%);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--gray-4);
-}
-.set { padding: 20px 8px 0; }
-.set + .set { border-left: 1px solid var(--gray-4); }
-.set label { display: block; font-size: 12px; color: var(--gray-3); margin-bottom: 8px; }
-.step { display: flex; align-items: center; justify-content: center; gap: 4px; }
-.step button { width: 36px; height: 36px; font-size: 22px; font-weight: 300; color: var(--gray-3); line-height: 1; }
-.step button:hover { color: #fff; }
-.step output { min-width: 44px; font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; }
-
-/* Stats (white) */
-.stats { padding: 120px 22px 0; }
+.features { padding: 140px 22px 0; }
 .wrap { max-width: 1080px; margin: 0 auto; }
 .h2 { font-size: 56px; line-height: 1.07; font-weight: 600; letter-spacing: -0.03em; }
-.lead { font-size: 21px; line-height: 1.38; color: var(--gray-3); margin-top: 12px; font-weight: 400; }
+.lead { font-size: 21px; line-height: 1.38; color: var(--gray-3); margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 72px; border-top: 1px solid var(--ink); }
+.col { padding: 28px 32px 8px 0; }
+.col + .col { padding-left: 32px; border-left: 1px solid var(--gray-2); }
+.col .no { font-size: 14px; color: var(--gray-3); font-variant-numeric: tabular-nums; }
+.col h3 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-top: 56px; }
+.col p { font-size: 17px; color: var(--gray-4); margin-top: 12px; }
+#features { scroll-margin-top: var(--nav-h); }
 
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 64px; border-top: 1px solid var(--ink); }
-.kpi { padding: 24px 24px 0 0; }
-.kpi + .kpi { padding-left: 24px; border-left: 1px solid var(--gray-2); }
-.kpi dt { font-size: 14px; color: var(--gray-3); }
-.kpi dd { font-size: 48px; line-height: 1.1; font-weight: 600; letter-spacing: -0.03em; margin-top: 8px; font-variant-numeric: tabular-nums; }
-.kpi dd small { font-size: 17px; font-weight: 400; color: var(--gray-3); margin-left: 3px; letter-spacing: 0; }
+.closing { background: #000; color: #f5f5f7; margin-top: 140px; padding: 120px 22px; text-align: center; }
+.closing h2 { font-size: clamp(36px, 6vw, 72px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.08; }
+.closing .btn { margin-top: 40px; }
 
-.grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 80px; margin-top: 96px; }
-.grid > div { min-width: 0; }
-.head { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--gray-2); padding-bottom: 12px; }
-.head h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
-.range { display: flex; gap: 20px; }
-.range button { font-size: 14px; color: var(--gray-3); padding: 2px 0; border-bottom: 1px solid transparent; }
-.range button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
-
-.chart { height: 280px; display: flex; align-items: stretch; gap: 8px; margin-top: 28px; }
-.chart.dense { gap: 3px; }
-.col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
-.col .v { font-size: 12px; color: var(--gray-3); height: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.col .b { width: 100%; background: var(--gray-2); min-height: 2px; transition: height .4s ease; }
-.col.today .b { background: var(--ink); }
-.col.today .v { color: var(--ink); font-weight: 600; }
-.col .d { font-size: 12px; color: var(--gray-3); margin-top: 10px; height: 18px; white-space: nowrap; width: 0; display: flex; justify-content: center; overflow: visible; }
-.chart:not(.dense) .col .d { width: auto; }
-.chart.dense .col.today .d { justify-content: flex-end; }
-.col.today .d { color: var(--ink); font-weight: 600; }
-.chart.dense .v { display: none; }
-.chart.dense .col:not(.show) .d { visibility: hidden; }
-
-.log { list-style: none; }
-.log li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--gray-2); }
-.log .name { font-size: 17px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.log .meta { font-size: 12px; color: var(--gray-3); margin-top: 2px; }
-.log .right { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
-.log .min { font-size: 17px; font-variant-numeric: tabular-nums; }
-.log .del { font-size: 12px; color: var(--gray-3); padding: 6px 0; }
-.log .del:hover { color: #bf4800; }
-.empty { padding: 40px 0; color: var(--gray-3); font-size: 17px; }
-.clear { margin-top: 20px; font-size: 14px; color: var(--blue); }
-.clear:hover { text-decoration: underline; }
-.clear[hidden] { display: none; }
-
-/* Sync */
-.sync { margin-top: 112px; border-top: 1px solid var(--ink); padding-top: 28px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; }
-.sync h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
-.sync .desc { font-size: 17px; color: var(--gray-3); margin-top: 8px; }
-.sync-body { min-width: 0; }
-.sync-state { font-size: 14px; color: var(--gray-3); margin-bottom: 14px; }
-.sync-state b { color: var(--ink); font-weight: 600; }
-.code { font-size: 28px; font-weight: 600; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; word-break: break-all; border-bottom: 1px solid var(--gray-2); padding-bottom: 14px; }
-.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; align-items: center; }
-.btn-line { height: 44px; padding: 0 22px; font-size: 15px; border: 1px solid var(--ink); border-radius: 0; background: var(--white); color: var(--ink); transition: background .2s, color .2s; }
-.btn-line:hover { background: var(--ink); color: var(--white); }
-.btn-solid { height: 44px; padding: 0 22px; font-size: 15px; border-radius: 0; background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
-.btn-solid:hover { background: #000; }
-.link { font-size: 14px; color: var(--blue); padding: 8px 0; }
-.link:hover { text-decoration: underline; }
-.join { display: flex; gap: 12px; margin-top: 28px; align-items: flex-end; }
-.join input { flex: 1; min-width: 0; border: 0; border-bottom: 1px solid var(--gray-2); border-radius: 0; background: transparent; padding: 10px 0; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; }
-.join input:focus { outline: 0; border-bottom-color: var(--ink); }
-.join input::placeholder { text-transform: none; letter-spacing: 0; color: var(--gray-3); }
-.sync-note { font-size: 12px; color: var(--gray-3); margin-top: 16px; }
-.sync-msg { font-size: 14px; margin-top: 12px; min-height: 21px; color: var(--gray-4); }
-.sync-msg.err { color: #bf4800; }
-[hidden] { display: none !important; }
-
-footer { margin-top: 120px; background: var(--gray-1); padding: 20px 22px calc(20px + env(safe-area-inset-bottom)); }
+footer { background: var(--gray-1); padding: 20px 22px calc(20px + env(safe-area-inset-bottom)); }
 footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray-3); }
 
-/* Tablet */
 @media (max-width: 960px) {
   .h2 { font-size: 40px; }
-  .grid { grid-template-columns: minmax(0, 1fr); gap: 72px; }
-  .sync { grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 88px; }
-  .kpi dd { font-size: 40px; }
+  .col h3 { margin-top: 40px; font-size: 24px; }
+  .col { padding-right: 20px; }
+  .col + .col { padding-left: 20px; }
 }
-
-/* Mobile */
 @media (max-width: 640px) {
   .nav-in { padding: 0 18px; }
-  .nav-links { gap: 20px; }
-  .timer { padding: 36px 18px 40px; justify-content: flex-start; }
-  .modes { gap: 0; width: 100%; justify-content: space-between; margin-bottom: 36px; }
-  .mode { font-size: 15px; flex: 1; }
-  .time { font-size: clamp(88px, 29vw, 140px); margin: 10px 0 24px; }
-  .actions { width: 100%; margin-top: 32px; }
-  .btn-main { flex: 1; }
-  .btn { padding: 0 12px; }
-  .btn-sub { min-width: 88px; }
-  .settings { grid-template-columns: repeat(2, 1fr); margin-top: 48px; }
-  .set { padding-bottom: 16px; }
-  .set:nth-child(3), .set:nth-child(4) { border-top: 1px solid var(--gray-4); }
-  .set:nth-child(3) { border-left: 0; }
-  .stats { padding: 80px 18px 0; }
+  .hero { padding: 48px 18px; }
+  .cta { flex-direction: column; gap: 20px; width: 100%; margin-top: 40px; }
+  .btn { width: 100%; }
+  .features { padding: 88px 18px 0; }
   .h2 { font-size: 32px; }
   .lead { font-size: 17px; }
-  .kpis { grid-template-columns: repeat(2, 1fr); margin-top: 40px; }
-  .kpi { padding: 20px 12px 24px 0; }
-  .kpi + .kpi { padding-left: 16px; }
-  .kpi:nth-child(3) { border-left: 0; padding-left: 0; }
-  .kpi:nth-child(n+3) { border-top: 1px solid var(--gray-2); }
-  .kpi dd { font-size: 32px; }
-  .kpi dd small { font-size: 14px; }
-  .grid { margin-top: 64px; gap: 56px; }
-  .sync { margin-top: 64px; }
-  .code { font-size: 22px; }
-  .join { flex-direction: column; align-items: stretch; gap: 16px; }
-  .btn-line, .btn-solid { flex: 1; }
-  .head h3 { font-size: 20px; }
-  .chart { height: 220px; gap: 6px; }
-  footer { margin-top: 80px; }
+  .cols { grid-template-columns: 1fr; margin-top: 44px; }
+  .col, .col + .col { padding: 24px 0 28px; border-left: 0; }
+  .col + .col { border-top: 1px solid var(--gray-2); }
+  .col h3 { margin-top: 20px; }
+  .closing { margin-top: 88px; padding: 88px 18px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  * { transition: none !important; }
-}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
 </head>
 <body>
 
 <header class="nav">
   <div class="nav-in">
-    <a class="brand" href="#timer">Pomolog</a>
+    <a class="brand" href="/">Pomolog</a>
     <nav class="nav-links" aria-label="바로가기">
-      <a href="#timer">타이머</a>
-      <a href="#stats">통계</a>
+      <a href="#features" data-go="features">기능</a>
+      <a href="/app">시작하기</a>
     </nav>
   </div>
 </header>
 
 <main>
-  <section class="timer" id="timer" aria-label="뽀모도로 타이머">
-    <div class="modes" role="tablist" aria-label="타이머 모드">
-      <button class="mode" role="tab" data-mode="focus">집중</button>
-      <button class="mode" role="tab" data-mode="short">짧은 휴식</button>
-      <button class="mode" role="tab" data-mode="long">긴 휴식</button>
-    </div>
-
-    <p class="eyebrow" id="eyebrow"></p>
-    <div class="time" id="time" role="timer" aria-live="off">25:00</div>
-    <div class="bar" aria-hidden="true"><i id="prog"></i></div>
-
-    <div class="task">
-      <input id="label" type="text" maxlength="40" placeholder="무엇에 집중하나요?" aria-label="집중할 작업 이름" autocomplete="off">
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-main" id="toggle">시작</button>
-      <button class="btn btn-sub" id="reset">초기화</button>
-      <button class="btn btn-sub" id="skip">건너뛰기</button>
-    </div>
-
-    <div class="settings" aria-label="시간 설정">
-      <div class="set"><label>집중 (분)</label>
-        <div class="step"><button data-k="focus" data-d="-1" aria-label="집중 시간 줄이기">−</button><output id="o-focus">25</output><button data-k="focus" data-d="1" aria-label="집중 시간 늘리기">+</button></div></div>
-      <div class="set"><label>짧은 휴식 (분)</label>
-        <div class="step"><button data-k="short" data-d="-1" aria-label="짧은 휴식 줄이기">−</button><output id="o-short">5</output><button data-k="short" data-d="1" aria-label="짧은 휴식 늘리기">+</button></div></div>
-      <div class="set"><label>긴 휴식 (분)</label>
-        <div class="step"><button data-k="long" data-d="-1" aria-label="긴 휴식 줄이기">−</button><output id="o-long">15</output><button data-k="long" data-d="1" aria-label="긴 휴식 늘리기">+</button></div></div>
-      <div class="set"><label>긴 휴식 주기 (회)</label>
-        <div class="step"><button data-k="every" data-d="-1" aria-label="주기 줄이기">−</button><output id="o-every">4</output><button data-k="every" data-d="1" aria-label="주기 늘리기">+</button></div></div>
+  <section class="hero">
+    <p class="eyebrow">뽀모도로 타이머</p>
+    <h1 class="title">Pomolog.</h1>
+    <p class="sub"><b>25분 집중, 5분 휴식.</b><br>쌓이는 기록까지 한 곳에서.</p>
+    <div class="cta">
+      <a class="btn" href="/app">시작하기</a>
+      <a class="more" href="#features" data-go="features">기능 살펴보기</a>
     </div>
   </section>
 
-  <section class="stats" id="stats" aria-label="집중 시간 통계">
+  <section class="features" id="features">
     <div class="wrap">
-      <h2 class="h2">집중 시간 통계</h2>
-      <p class="lead">완료한 집중 세션이 이 기기에 자동으로 기록됩니다.</p>
-
-      <dl class="kpis">
-        <div class="kpi"><dt>오늘</dt><dd id="k-today">0<small>분</small></dd></div>
-        <div class="kpi"><dt>이번 주</dt><dd id="k-week">0<small>분</small></dd></div>
-        <div class="kpi"><dt>연속 기록</dt><dd id="k-streak">0<small>일</small></dd></div>
-        <div class="kpi"><dt>누적 세션</dt><dd id="k-total">0<small>회</small></dd></div>
-      </dl>
-
-      <div class="grid">
-        <div>
-          <div class="head">
-            <h3>일별 집중 시간</h3>
-            <div class="range" role="tablist" aria-label="기간">
-              <button role="tab" data-r="7" aria-selected="true">7일</button>
-              <button role="tab" data-r="30" aria-selected="false">30일</button>
-            </div>
-          </div>
-          <div class="chart" id="chart" aria-label="일별 집중 시간 막대 그래프"></div>
+      <h2 class="h2">단순하게, 끝까지.</h2>
+      <p class="lead">필요한 것만 담았습니다.</p>
+      <div class="cols">
+        <div class="col">
+          <span class="no">01</span>
+          <h3>타이머</h3>
+          <p>집중과 휴식을 자동으로 오갑니다. 시간과 긴 휴식 주기는 직접 정할 수 있습니다.</p>
         </div>
-        <div>
-          <div class="head"><h3>최근 기록</h3></div>
-          <ul class="log" id="log"></ul>
-          <button class="clear" id="clear" hidden>모든 기록 삭제</button>
+        <div class="col">
+          <span class="no">02</span>
+          <h3>통계</h3>
+          <p>오늘, 이번 주, 연속 기록과 7일·30일 그래프로 집중한 시간을 한눈에 봅니다.</p>
         </div>
-      </div>
-
-      <div class="sync" id="sync">
-        <div>
-          <h3>기기 간 동기화</h3>
-          <p class="desc">동기화 코드 하나로 PC와 휴대폰의 기록을 하나로 합칩니다.</p>
-        </div>
-        <div class="sync-body">
-          <div id="sync-off">
-            <div class="sync-state">현재 <b>꺼짐</b> · 기록은 이 기기에만 저장됩니다.</div>
-            <div class="row" style="margin-top:0">
-              <button class="btn-solid" id="sync-new">새 코드로 시작</button>
-            </div>
-            <div class="join">
-              <input id="sync-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="다른 기기의 코드를 입력하세요" aria-label="동기화 코드 입력">
-              <button class="btn-line" id="sync-join">연결</button>
-            </div>
-          </div>
-          <div id="sync-on" hidden>
-            <div class="sync-state">현재 <b>켜짐</b> · <span id="sync-time">동기화 중…</span></div>
-            <div class="code" id="sync-code"></div>
-            <div class="row">
-              <button class="btn-line" id="sync-copy">코드 복사</button>
-              <button class="btn-line" id="sync-now">지금 동기화</button>
-              <button class="link" id="sync-off-btn">연결 해제</button>
-            </div>
-          </div>
-          <p class="sync-msg" id="sync-msg" role="status"></p>
-          <p class="sync-note">코드를 아는 사람은 누구나 이 기록을 보고 바꿀 수 있습니다. 비밀번호처럼 보관하세요. 연결 해제해도 이 기기의 기록은 남습니다.</p>
+        <div class="col">
+          <span class="no">03</span>
+          <h3>동기화</h3>
+          <p>코드 하나로 PC와 휴대폰의 기록을 합칩니다. 로그인은 필요하지 않습니다.</p>
         </div>
       </div>
     </div>
+  </section>
+
+  <section class="closing">
+    <h2>지금 25분을 시작하세요.</h2>
+    <a class="btn" href="/app">시작하기</a>
   </section>
 </main>
 
-<footer><p>기록은 이 기기에 저장됩니다. 동기화를 켠 경우에만 코드와 함께 서버에 저장됩니다.</p></footer>
+<footer><p>Pomolog</p></footer>
 
 <script>
 (function () {
-  'use strict';
-  var $ = function (s) { return document.querySelector(s); };
-  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
-
-  var MODE_NAME = { focus: '집중', short: '짧은 휴식', long: '긴 휴식' };
-  var LIMITS = { focus: [1, 90], short: [1, 30], long: [1, 60], every: [2, 8] };
-  var DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-
-  function load(key, fallback) {
-    try { var v = JSON.parse(localStorage.getItem(key)); return v || fallback; } catch (e) { return fallback; }
-  }
-  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
-
-  var cfg = Object.assign({ focus: 25, short: 5, long: 15, every: 4 }, load('pomolog.cfg', {}));
-  var sessions = load('pomolog.sessions', []);
-  if (!Array.isArray(sessions)) sessions = [];
-  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
-  sessions.forEach(function (s) { if (!s.id) s.id = uid(); });
-  save('pomolog.sessions', sessions);
-  var sy = Object.assign({ code: '', deleted: [], last: 0 }, load('pomolog.sync', {}));
-  if (!Array.isArray(sy.deleted)) sy.deleted = [];
-  function saveSy() { save('pomolog.sync', sy); }
-  var SB_URL = 'https://qcyaynrxflbcddwbkqpy.supabase.co';
-  var SB_KEY = 'sb_publishable_RbidfIMX4EYam5erXUUbOA_z0FsSq9J';
-  var st = Object.assign({ mode: 'focus', running: false, endAt: 0, left: 0, cycle: 0, label: '' }, load('pomolog.timer', {}));
-  var range = 7;
-  var tick = null;
-
-  function total(mode) { return cfg[mode] * 60 * 1000; }
-  if (!st.left) st.left = total(st.mode);
-  if (st.running && st.endAt - Date.now() <= 0) { st.running = false; st.left = total(st.mode); }
-  $('#label').value = st.label || '';
-
-  function persist() { save('pomolog.timer', st); }
-
-  function fmt(ms) {
-    var s = Math.max(0, Math.ceil(ms / 1000));
-    var m = Math.floor(s / 60), r = s % 60;
-    return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
-  }
-  function remaining() { return st.running ? st.endAt - Date.now() : st.left; }
-
-  function render() {
-    var left = remaining();
-    var t = fmt(left);
-    $('#time').textContent = t;
-    document.title = (st.running ? t + ' · ' : '') + 'Pomolog · ' + MODE_NAME[st.mode];
-    var done = 1 - left / total(st.mode);
-    $('#prog').style.width = Math.min(100, Math.max(0, done * 100)) + '%';
-    $('#toggle').textContent = st.running ? '일시정지' : (left < total(st.mode) ? '계속' : '시작');
-    $$('.mode').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.mode === st.mode); });
-    var n = st.cycle % cfg.every;
-    $('#eyebrow').textContent = st.mode === 'focus'
-      ? (n + 1) + '번째 집중 · ' + cfg.every + '회마다 긴 휴식'
-      : '잠시 쉬어가세요';
-    $$('[data-k]').forEach(function () {});
-    ['focus', 'short', 'long', 'every'].forEach(function (k) { $('#o-' + k).textContent = cfg[k]; });
-  }
-
-  function beep() {
-    try {
-      var C = window.AudioContext || window.webkitAudioContext;
-      var ctx = new C();
-      [0, 0.28, 0.56].forEach(function (d) {
-        var o = ctx.createOscillator(), g = ctx.createGain();
-        o.type = 'sine'; o.frequency.value = 880;
-        g.gain.setValueAtTime(0.0001, ctx.currentTime + d);
-        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + d + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d + 0.22);
-        o.connect(g); g.connect(ctx.destination);
-        o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.25);
-      });
-    } catch (e) {}
-  }
-
-  function setMode(mode) {
-    st.mode = mode; st.running = false; st.left = total(mode); st.endAt = 0;
-    stopTick(); persist(); render();
-  }
-
-  function complete() {
-    stopTick();
-    var wasFocus = st.mode === 'focus';
-    if (wasFocus) {
-      sessions.push({ id: uid(), t: Date.now(), min: cfg.focus, label: ($('#label').value || '').trim() });
-      save('pomolog.sessions', sessions);
-      st.cycle += 1;
-      queueSync();
-    }
-    var next = wasFocus ? (st.cycle % cfg.every === 0 ? 'long' : 'short') : 'focus';
-    beep();
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(wasFocus ? '집중 완료' : '휴식 끝', { body: wasFocus ? MODE_NAME[next] + ' 시간입니다.' : '다시 집중해 볼까요?' });
-      }
-    } catch (e) {}
-    setMode(next);
-    renderStats();
-  }
-
-  function startTick() {
-    stopTick();
-    tick = setInterval(function () {
-      if (remaining() <= 0) complete(); else render();
-    }, 250);
-  }
-  function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
-
-  function toggle() {
-    if (st.running) {
-      st.left = st.endAt - Date.now(); st.running = false; stopTick();
-    } else {
-      st.endAt = Date.now() + st.left; st.running = true; startTick();
-      try {
-        if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-      } catch (e) {}
-    }
-    persist(); render();
-  }
-
-  $('#toggle').addEventListener('click', toggle);
-  $('#reset').addEventListener('click', function () { setMode(st.mode); });
-  $('#skip').addEventListener('click', function () {
-    var next = st.mode === 'focus' ? ((st.cycle + 1) % cfg.every === 0 ? 'long' : 'short') : 'focus';
-    if (st.mode === 'focus') st.cycle += 1;
-    setMode(next);
-  });
-  $$('.mode').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
-  $('#label').addEventListener('input', function (e) { st.label = e.target.value; persist(); });
-
-  $$('[data-k]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var k = b.dataset.k, lim = LIMITS[k];
-      cfg[k] = Math.min(lim[1], Math.max(lim[0], cfg[k] + Number(b.dataset.d)));
-      save('pomolog.cfg', cfg);
-      if (!st.running && k === st.mode) st.left = total(st.mode);
-      persist(); render();
+  // 예전 공유 링크(#timer, #stats)는 앱으로 안내합니다.
+  var h = location.hash;
+  if (h === '#timer' || h === '#stats') { location.replace('/app' + h); return; }
+  if (h) history.replaceState(null, '', location.pathname + location.search);
+  // 주소에 #을 남기지 않고 부드럽게 이동
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var el = document.getElementById(a.getAttribute('data-go'));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
-
-  document.addEventListener('keydown', function (e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-    if (e.code === 'Space') { e.preventDefault(); toggle(); }
-  });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
-
-  /* Stats */
-  function key(d) {
-    var m = d.getMonth() + 1, day = d.getDate();
-    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
-  }
-  function byDay() {
-    var map = {};
-    sessions.forEach(function (s) { var k = key(new Date(s.t)); map[k] = (map[k] || 0) + s.min; });
-    return map;
-  }
-  function minutesText(n) {
-    if (n < 60) return { v: String(n), u: '분' };
-    var h = Math.floor(n / 60), m = n % 60;
-    return { v: h + '', u: '시간' + (m ? ' ' + m + '분' : '') };
-  }
-  function setKpi(id, n, unit) {
-    var el = $(id); el.innerHTML = '';
-    el.appendChild(document.createTextNode(n));
-    var s = document.createElement('small'); s.textContent = unit; el.appendChild(s);
-  }
-
-  function renderStats() {
-    var map = byDay();
-    var now = new Date(); now.setHours(0, 0, 0, 0);
-
-    var today = map[key(now)] || 0;
-    var t = minutesText(today); setKpi('#k-today', t.v, t.u);
-
-    var week = 0;
-    var dow = now.getDay(); var monOffset = (dow + 6) % 7;
-    for (var i = 0; i <= monOffset; i++) { var d = new Date(now); d.setDate(d.getDate() - i); week += map[key(d)] || 0; }
-    var w = minutesText(week); setKpi('#k-week', w.v, w.u);
-
-    var streak = 0, cur = new Date(now);
-    if (!map[key(cur)]) cur.setDate(cur.getDate() - 1);
-    while (map[key(cur)]) { streak++; cur.setDate(cur.getDate() - 1); }
-    setKpi('#k-streak', streak, '일');
-    setKpi('#k-total', sessions.length, '회');
-
-    /* chart */
-    var chart = $('#chart'); chart.innerHTML = '';
-    chart.classList.toggle('dense', range > 7);
-    var vals = [], max = 1;
-    for (var j = range - 1; j >= 0; j--) {
-      var dd = new Date(now); dd.setDate(dd.getDate() - j);
-      var v = map[key(dd)] || 0; if (v > max) max = v;
-      vals.push({ d: dd, v: v, last: j === 0 });
-    }
-    vals.forEach(function (x, idx) {
-      var col = document.createElement('div');
-      col.className = 'col' + (x.last ? ' today' : '') + ((range <= 7 || idx % 5 === (range - 1) % 5) ? ' show' : '');
-      var v = document.createElement('div'); v.className = 'v'; v.textContent = x.v ? x.v + '분' : '';
-      var b = document.createElement('div'); b.className = 'b';
-      b.style.height = (x.v / max * (chart.clientHeight - 80)) + 'px';
-      b.title = key(x.d) + ' · ' + x.v + '분';
-      var dl = document.createElement('div'); dl.className = 'd';
-      dl.textContent = range <= 7 ? (x.last ? '오늘' : DAYS[x.d.getDay()]) : (x.d.getMonth() + 1) + '/' + x.d.getDate();
-      col.appendChild(v); col.appendChild(b); col.appendChild(dl); chart.appendChild(col);
-    });
-
-    /* log */
-    var log = $('#log'); log.innerHTML = '';
-    var recent = sessions.slice().sort(function (a, b) { return b.t - a.t; }).slice(0, 8);
-    if (!recent.length) {
-      var li = document.createElement('li'); li.style.display = 'block'; li.style.borderBottom = '0';
-      li.className = 'empty'; li.textContent = '아직 기록이 없습니다. 첫 집중을 시작해 보세요.';
-      log.appendChild(li);
-    }
-    recent.forEach(function (s) {
-      var dt = new Date(s.t);
-      var li = document.createElement('li');
-      var left = document.createElement('div'); left.style.minWidth = 0;
-      var nm = document.createElement('div'); nm.className = 'name'; nm.textContent = s.label || '집중';
-      var mt = document.createElement('div'); mt.className = 'meta';
-      var hh = dt.getHours(), mm = dt.getMinutes();
-      mt.textContent = (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 ' + DAYS[dt.getDay()] + ' · ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
-      left.appendChild(nm); left.appendChild(mt);
-      var right = document.createElement('div'); right.className = 'right';
-      var mn = document.createElement('span'); mn.className = 'min'; mn.textContent = s.min + '분';
-      var del = document.createElement('button'); del.className = 'del'; del.textContent = '삭제';
-      del.setAttribute('aria-label', '이 기록 삭제');
-      del.addEventListener('click', function () {
-        sessions = sessions.filter(function (x) { return x !== s; });
-        sy.deleted.push(s.id); saveSy();
-        save('pomolog.sessions', sessions); renderStats(); queueSync();
-      });
-      right.appendChild(mn); right.appendChild(del);
-      li.appendChild(left); li.appendChild(right); log.appendChild(li);
-    });
-    $('#clear').hidden = !sessions.length;
-  }
-
-  $$('.range button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      range = Number(b.dataset.r);
-      $$('.range button').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
-      renderStats();
-    });
-  });
-  $('#clear').addEventListener('click', function () {
-    if (confirm('모든 집중 기록을 삭제할까요? 되돌릴 수 없습니다.')) {
-      sessions.forEach(function (s) { sy.deleted.push(s.id); }); saveSy();
-      sessions = []; save('pomolog.sessions', sessions); renderStats(); queueSync();
-    }
-  });
-
-  /* Sync */
-  var ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var syncing = false, syncTimer = null, again = false;
-  function normCode(c) { return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
-  function fmtCode(c) { return c.replace(/(.{5})(?=.)/g, '$1-'); }
-  function newCode() {
-    var a = new Uint32Array(20); crypto.getRandomValues(a);
-    var s = ''; for (var i = 0; i < 20; i++) s += ALPHA[a[i] % ALPHA.length];
-    return s;
-  }
-  function sha256(str) {
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode('pomolog:' + str)).then(function (buf) {
-      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return (b < 16 ? '0' : '') + b.toString(16); }).join('');
-    });
-  }
-  function setMsg(t, err) { var m = $('#sync-msg'); m.textContent = t || ''; m.className = 'sync-msg' + (err ? ' err' : ''); }
-  function renderSync() {
-    var on = !!sy.code;
-    $('#sync-off').hidden = on; $('#sync-on').hidden = !on;
-    if (on) {
-      $('#sync-code').textContent = fmtCode(sy.code);
-      if (sy.last) {
-        var d = new Date(sy.last), h = d.getHours(), m = d.getMinutes();
-        $('#sync-time').textContent = '마지막 동기화 ' + (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-      }
-    }
-  }
-  function doSync() {
-    if (!sy.code) return Promise.resolve(false);
-    if (syncing) { again = true; return Promise.resolve(false); }
-    syncing = true;
-    return sha256(sy.code).then(function (key) {
-      return fetch(SB_URL + '/rest/v1/rpc/pomolog_sync', {
-        method: 'POST',
-        headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_key: key, p_data: { sessions: sessions, deleted: sy.deleted } })
-      });
-    }).then(function (r) {
-      if (!r.ok) throw new Error('http ' + r.status);
-      return r.json();
-    }).then(function (res) {
-      var list = (res.sessions || []).map(function (s) { return { id: String(s.id), t: Number(s.t), min: Number(s.min) || 0, label: String(s.label || '') }; });
-      sessions = list; save('pomolog.sessions', sessions);
-      sy.deleted = (res.deleted || []).slice(-2000); sy.last = Date.now(); saveSy();
-      renderSync(); renderStats(); setMsg('');
-      return true;
-    }).catch(function () {
-      setMsg('동기화하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.', true);
-      return false;
-    }).then(function (ok) {
-      syncing = false;
-      if (again) { again = false; queueSync(); }
-      return ok;
-    });
-  }
-  function queueSync() {
-    if (!sy.code) return;
-    clearTimeout(syncTimer); syncTimer = setTimeout(doSync, 600);
-  }
-  $('#sync-new').addEventListener('click', function () {
-    sy.code = newCode(); saveSy(); renderSync(); setMsg('코드를 만들었습니다. 다른 기기에서 이 코드를 입력하세요.');
-    doSync();
-  });
-  $('#sync-join').addEventListener('click', function () {
-    var c = normCode($('#sync-input').value);
-    if (c.length !== 20) { setMsg('코드는 영문 대문자와 숫자 20자리입니다.', true); return; }
-    sy.code = c; saveSy(); $('#sync-input').value = ''; renderSync(); setMsg('연결 중…');
-    doSync().then(function (ok) { if (ok) setMsg('연결했습니다. 두 기기의 기록이 합쳐졌습니다.'); });
-  });
-  $('#sync-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#sync-join').click(); });
-  $('#sync-now').addEventListener('click', function () { setMsg('동기화 중…'); doSync().then(function (ok) { if (ok) setMsg('동기화했습니다.'); }); });
-  $('#sync-copy').addEventListener('click', function () {
-    var t = fmtCode(sy.code);
-    var done = function () { setMsg('코드를 복사했습니다.'); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { setMsg('복사하지 못했습니다. 코드를 직접 선택해 복사하세요.', true); });
-    else setMsg('복사하지 못했습니다. 코드를 직접 선택해 복사하세요.', true);
-  });
-  $('#sync-off-btn').addEventListener('click', function () {
-    if (confirm('동기화를 해제할까요? 이 기기의 기록은 그대로 남습니다.')) { sy.code = ''; sy.last = 0; saveSy(); renderSync(); setMsg('동기화를 해제했습니다.'); }
-  });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) queueSync(); });
-  setInterval(function () { if (!document.hidden) doSync(); }, 60000);
-  window.addEventListener('resize', renderStats);
-
-  render(); renderStats(); renderSync(); queueSync();
-  if (st.running) startTick();
 })();
 </script>
 </body>
