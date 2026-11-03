@@ -6,6 +6,24 @@
 <meta name="theme-color" content="#000000">
 <meta name="description" content="뽀모도로 타이머와 집중 시간 통계를 한 화면에서 확인하세요.">
 <title>Pomolog · 뽀모도로 타이머</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pomolog">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="Pomolog">
+<meta property="og:description" content="뽀모도로 타이머와 집중 시간 통계를 한 화면에서 확인하세요.">
+<meta property="og:url" content="https://pomolog-alpha.vercel.app/">
+<meta property="og:image" content="https://pomolog-alpha.vercel.app/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
+<meta property="og:image:alt" content="Pomolog.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pomolog">
+<meta name="twitter:description" content="뽀모도로 타이머와 집중 시간 통계를 한 화면에서 확인하세요.">
+<meta name="twitter:image" content="https://pomolog-alpha.vercel.app/og.png">
 <style>
 :root {
   --black: #000;
@@ -161,6 +179,30 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 .clear:hover { text-decoration: underline; }
 .clear[hidden] { display: none; }
 
+/* Sync */
+.sync { margin-top: 112px; border-top: 1px solid var(--ink); padding-top: 28px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 80px; }
+.sync h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.sync .desc { font-size: 17px; color: var(--gray-3); margin-top: 8px; }
+.sync-body { min-width: 0; }
+.sync-state { font-size: 14px; color: var(--gray-3); margin-bottom: 14px; }
+.sync-state b { color: var(--ink); font-weight: 600; }
+.code { font-size: 28px; font-weight: 600; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; word-break: break-all; border-bottom: 1px solid var(--gray-2); padding-bottom: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; align-items: center; }
+.btn-line { height: 44px; padding: 0 22px; font-size: 15px; border: 1px solid var(--ink); border-radius: 0; background: var(--white); color: var(--ink); transition: background .2s, color .2s; }
+.btn-line:hover { background: var(--ink); color: var(--white); }
+.btn-solid { height: 44px; padding: 0 22px; font-size: 15px; border-radius: 0; background: var(--ink); color: var(--white); border: 1px solid var(--ink); }
+.btn-solid:hover { background: #000; }
+.link { font-size: 14px; color: var(--blue); padding: 8px 0; }
+.link:hover { text-decoration: underline; }
+.join { display: flex; gap: 12px; margin-top: 28px; align-items: flex-end; }
+.join input { flex: 1; min-width: 0; border: 0; border-bottom: 1px solid var(--gray-2); border-radius: 0; background: transparent; padding: 10px 0; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; }
+.join input:focus { outline: 0; border-bottom-color: var(--ink); }
+.join input::placeholder { text-transform: none; letter-spacing: 0; color: var(--gray-3); }
+.sync-note { font-size: 12px; color: var(--gray-3); margin-top: 16px; }
+.sync-msg { font-size: 14px; margin-top: 12px; min-height: 21px; color: var(--gray-4); }
+.sync-msg.err { color: #bf4800; }
+[hidden] { display: none !important; }
+
 footer { margin-top: 120px; background: var(--gray-1); padding: 20px 22px calc(20px + env(safe-area-inset-bottom)); }
 footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray-3); }
 
@@ -168,6 +210,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
 @media (max-width: 960px) {
   .h2 { font-size: 40px; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 72px; }
+  .sync { grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 88px; }
   .kpi dd { font-size: 40px; }
 }
 
@@ -198,6 +241,10 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   .kpi dd { font-size: 32px; }
   .kpi dd small { font-size: 14px; }
   .grid { margin-top: 64px; gap: 56px; }
+  .sync { margin-top: 64px; }
+  .code { font-size: 22px; }
+  .join { flex-direction: column; align-items: stretch; gap: 16px; }
+  .btn-line, .btn-solid { flex: 1; }
   .head h3 { font-size: 20px; }
   .chart { height: 220px; gap: 6px; }
   footer { margin-top: 80px; }
@@ -283,11 +330,41 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
           <button class="clear" id="clear" hidden>모든 기록 삭제</button>
         </div>
       </div>
+
+      <div class="sync" id="sync">
+        <div>
+          <h3>기기 간 동기화</h3>
+          <p class="desc">동기화 코드 하나로 PC와 휴대폰의 기록을 하나로 합칩니다.</p>
+        </div>
+        <div class="sync-body">
+          <div id="sync-off">
+            <div class="sync-state">현재 <b>꺼짐</b> · 기록은 이 기기에만 저장됩니다.</div>
+            <div class="row" style="margin-top:0">
+              <button class="btn-solid" id="sync-new">새 코드로 시작</button>
+            </div>
+            <div class="join">
+              <input id="sync-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="다른 기기의 코드를 입력하세요" aria-label="동기화 코드 입력">
+              <button class="btn-line" id="sync-join">연결</button>
+            </div>
+          </div>
+          <div id="sync-on" hidden>
+            <div class="sync-state">현재 <b>켜짐</b> · <span id="sync-time">동기화 중…</span></div>
+            <div class="code" id="sync-code"></div>
+            <div class="row">
+              <button class="btn-line" id="sync-copy">코드 복사</button>
+              <button class="btn-line" id="sync-now">지금 동기화</button>
+              <button class="link" id="sync-off-btn">연결 해제</button>
+            </div>
+          </div>
+          <p class="sync-msg" id="sync-msg" role="status"></p>
+          <p class="sync-note">코드를 아는 사람은 누구나 이 기록을 보고 바꿀 수 있습니다. 비밀번호처럼 보관하세요. 연결 해제해도 이 기기의 기록은 남습니다.</p>
+        </div>
+      </div>
     </div>
   </section>
 </main>
 
-<footer><p>기록은 이 브라우저의 로컬 저장소에만 저장되며 외부로 전송되지 않습니다.</p></footer>
+<footer><p>기록은 이 기기에 저장됩니다. 동기화를 켠 경우에만 코드와 함께 서버에 저장됩니다.</p></footer>
 
 <script>
 (function () {
@@ -307,6 +384,14 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   var cfg = Object.assign({ focus: 25, short: 5, long: 15, every: 4 }, load('pomolog.cfg', {}));
   var sessions = load('pomolog.sessions', []);
   if (!Array.isArray(sessions)) sessions = [];
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+  sessions.forEach(function (s) { if (!s.id) s.id = uid(); });
+  save('pomolog.sessions', sessions);
+  var sy = Object.assign({ code: '', deleted: [], last: 0 }, load('pomolog.sync', {}));
+  if (!Array.isArray(sy.deleted)) sy.deleted = [];
+  function saveSy() { save('pomolog.sync', sy); }
+  var SB_URL = 'https://qcyaynrxflbcddwbkqpy.supabase.co';
+  var SB_KEY = 'sb_publishable_RbidfIMX4EYam5erXUUbOA_z0FsSq9J';
   var st = Object.assign({ mode: 'focus', running: false, endAt: 0, left: 0, cycle: 0, label: '' }, load('pomolog.timer', {}));
   var range = 7;
   var tick = null;
@@ -367,9 +452,10 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     stopTick();
     var wasFocus = st.mode === 'focus';
     if (wasFocus) {
-      sessions.push({ t: Date.now(), min: cfg.focus, label: ($('#label').value || '').trim() });
+      sessions.push({ id: uid(), t: Date.now(), min: cfg.focus, label: ($('#label').value || '').trim() });
       save('pomolog.sessions', sessions);
       st.cycle += 1;
+      queueSync();
     }
     var next = wasFocus ? (st.cycle % cfg.every === 0 ? 'long' : 'short') : 'focus';
     beep();
@@ -511,7 +597,8 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       del.setAttribute('aria-label', '이 기록 삭제');
       del.addEventListener('click', function () {
         sessions = sessions.filter(function (x) { return x !== s; });
-        save('pomolog.sessions', sessions); renderStats();
+        sy.deleted.push(s.id); saveSy();
+        save('pomolog.sessions', sessions); renderStats(); queueSync();
       });
       right.appendChild(mn); right.appendChild(del);
       li.appendChild(left); li.appendChild(right); log.appendChild(li);
@@ -527,11 +614,97 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     });
   });
   $('#clear').addEventListener('click', function () {
-    if (confirm('모든 집중 기록을 삭제할까요? 되돌릴 수 없습니다.')) { sessions = []; save('pomolog.sessions', sessions); renderStats(); }
+    if (confirm('모든 집중 기록을 삭제할까요? 되돌릴 수 없습니다.')) {
+      sessions.forEach(function (s) { sy.deleted.push(s.id); }); saveSy();
+      sessions = []; save('pomolog.sessions', sessions); renderStats(); queueSync();
+    }
   });
+
+  /* Sync */
+  var ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var syncing = false, syncTimer = null, again = false;
+  function normCode(c) { return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function fmtCode(c) { return c.replace(/(.{5})(?=.)/g, '$1-'); }
+  function newCode() {
+    var a = new Uint32Array(20); crypto.getRandomValues(a);
+    var s = ''; for (var i = 0; i < 20; i++) s += ALPHA[a[i] % ALPHA.length];
+    return s;
+  }
+  function sha256(str) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode('pomolog:' + str)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return (b < 16 ? '0' : '') + b.toString(16); }).join('');
+    });
+  }
+  function setMsg(t, err) { var m = $('#sync-msg'); m.textContent = t || ''; m.className = 'sync-msg' + (err ? ' err' : ''); }
+  function renderSync() {
+    var on = !!sy.code;
+    $('#sync-off').hidden = on; $('#sync-on').hidden = !on;
+    if (on) {
+      $('#sync-code').textContent = fmtCode(sy.code);
+      if (sy.last) {
+        var d = new Date(sy.last), h = d.getHours(), m = d.getMinutes();
+        $('#sync-time').textContent = '마지막 동기화 ' + (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+      }
+    }
+  }
+  function doSync() {
+    if (!sy.code) return Promise.resolve(false);
+    if (syncing) { again = true; return Promise.resolve(false); }
+    syncing = true;
+    return sha256(sy.code).then(function (key) {
+      return fetch(SB_URL + '/rest/v1/rpc/pomolog_sync', {
+        method: 'POST',
+        headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_key: key, p_data: { sessions: sessions, deleted: sy.deleted } })
+      });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }).then(function (res) {
+      var list = (res.sessions || []).map(function (s) { return { id: String(s.id), t: Number(s.t), min: Number(s.min) || 0, label: String(s.label || '') }; });
+      sessions = list; save('pomolog.sessions', sessions);
+      sy.deleted = (res.deleted || []).slice(-2000); sy.last = Date.now(); saveSy();
+      renderSync(); renderStats(); setMsg('');
+      return true;
+    }).catch(function () {
+      setMsg('동기화하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.', true);
+      return false;
+    }).then(function (ok) {
+      syncing = false;
+      if (again) { again = false; queueSync(); }
+      return ok;
+    });
+  }
+  function queueSync() {
+    if (!sy.code) return;
+    clearTimeout(syncTimer); syncTimer = setTimeout(doSync, 600);
+  }
+  $('#sync-new').addEventListener('click', function () {
+    sy.code = newCode(); saveSy(); renderSync(); setMsg('코드를 만들었습니다. 다른 기기에서 이 코드를 입력하세요.');
+    doSync();
+  });
+  $('#sync-join').addEventListener('click', function () {
+    var c = normCode($('#sync-input').value);
+    if (c.length !== 20) { setMsg('코드는 영문 대문자와 숫자 20자리입니다.', true); return; }
+    sy.code = c; saveSy(); $('#sync-input').value = ''; renderSync(); setMsg('연결 중…');
+    doSync().then(function (ok) { if (ok) setMsg('연결했습니다. 두 기기의 기록이 합쳐졌습니다.'); });
+  });
+  $('#sync-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#sync-join').click(); });
+  $('#sync-now').addEventListener('click', function () { setMsg('동기화 중…'); doSync().then(function (ok) { if (ok) setMsg('동기화했습니다.'); }); });
+  $('#sync-copy').addEventListener('click', function () {
+    var t = fmtCode(sy.code);
+    var done = function () { setMsg('코드를 복사했습니다.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { setMsg('복사하지 못했습니다. 코드를 직접 선택해 복사하세요.', true); });
+    else setMsg('복사하지 못했습니다. 코드를 직접 선택해 복사하세요.', true);
+  });
+  $('#sync-off-btn').addEventListener('click', function () {
+    if (confirm('동기화를 해제할까요? 이 기기의 기록은 그대로 남습니다.')) { sy.code = ''; sy.last = 0; saveSy(); renderSync(); setMsg('동기화를 해제했습니다.'); }
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) queueSync(); });
+  setInterval(function () { if (!document.hidden) doSync(); }, 60000);
   window.addEventListener('resize', renderStats);
 
-  render(); renderStats();
+  render(); renderStats(); renderSync(); queueSync();
   if (st.running) startTick();
 })();
 </script>
