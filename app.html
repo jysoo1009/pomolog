@@ -119,18 +119,29 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 .btn-sub { border: 1px solid var(--gray-4); color: #f5f5f7; min-width: 96px; }
 .btn-sub:hover { border-color: #f5f5f7; }
 
-.settings {
-  margin-top: 64px; width: min(760px, 100%);
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--gray-4);
-}
-.set { padding: 20px 8px 0; }
-.set + .set { border-left: 1px solid var(--gray-4); }
-.set label { display: block; font-size: 12px; color: var(--gray-3); margin-bottom: 8px; }
-.step { display: flex; align-items: center; justify-content: center; gap: 4px; }
-.step button { width: 36px; height: 36px; font-size: 22px; font-weight: 300; color: var(--gray-3); line-height: 1; }
-.step button:hover { color: #fff; }
-.step output { min-width: 44px; font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; }
+.set-link { margin-top: 40px; font-size: 14px; color: var(--gray-3); padding: 8px 4px; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
+.set-link:hover { color: #f5f5f7; border-bottom-color: #f5f5f7; }
+.nav-btn { font-size: 12px; color: rgba(245,245,247,.8); transition: color .2s; padding: 0; }
+.nav-btn:hover { color: #fff; }
+
+/* Settings sheet */
+.sheet { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+.sheet.open { opacity: 1; visibility: visible; }
+.panel { background: #fff; color: var(--ink); width: min(520px, calc(100% - 44px)); max-height: calc(100% - 44px); overflow-y: auto; padding: 36px 36px 28px; border-radius: 0; text-align: left; }
+.panel h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+.panel .sub { font-size: 17px; color: var(--gray-3); margin-top: 6px; }
+.slist { margin-top: 28px; border-top: 1px solid var(--ink); }
+.srow { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--gray-2); }
+.srow .t { font-size: 17px; font-weight: 600; }
+.srow .d { font-size: 12px; color: var(--gray-3); margin-top: 2px; }
+.sstep { display: flex; align-items: center; flex-shrink: 0; }
+.sstep button { width: 44px; height: 44px; border: 1px solid var(--gray-2); border-radius: 0; font-size: 22px; font-weight: 300; line-height: 1; color: var(--ink); background: #fff; transition: border-color .2s, background .2s; }
+.sstep button:hover { border-color: var(--ink); }
+.sstep button:active { background: var(--gray-1); }
+.sstep output { min-width: 56px; text-align: center; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.set-note { font-size: 12px; color: var(--gray-3); min-height: 18px; margin-top: 14px; }
+.sfoot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 16px; }
+.sfoot .btn-solid { min-width: 120px; }
 
 /* Stats (white) */
 .stats { padding: 120px 22px 0; }
@@ -228,10 +239,11 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   .btn-main { flex: 1; }
   .btn { padding: 0 12px; }
   .btn-sub { min-width: 88px; }
-  .settings { grid-template-columns: repeat(2, 1fr); margin-top: 48px; }
-  .set { padding-bottom: 16px; }
-  .set:nth-child(3), .set:nth-child(4) { border-top: 1px solid var(--gray-4); }
-  .set:nth-child(3) { border-left: 0; }
+  .set-link { margin-top: 32px; }
+  .sheet { align-items: flex-end; }
+  .panel { width: 100%; max-height: 92%; padding: 28px 18px calc(20px + env(safe-area-inset-bottom)); }
+  .panel h2 { font-size: 28px; }
+  .sfoot .btn-solid { flex: 1; }
   .stats { padding: 80px 18px 0; }
   .h2 { font-size: 32px; }
   .lead { font-size: 17px; }
@@ -265,6 +277,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     <nav class="nav-links" aria-label="바로가기">
       <a href="#timer" data-go="timer">타이머</a>
       <a href="#stats" data-go="stats">통계</a>
+      <button type="button" class="nav-btn" id="nav-set">설정</button>
     </nav>
   </div>
 </header>
@@ -278,7 +291,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     </div>
 
     <p class="eyebrow" id="eyebrow"></p>
-    <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+    <div class="time" id="time" role="timer" aria-live="off">50:00</div>
     <div class="bar" aria-hidden="true"><i id="prog"></i></div>
 
     <div class="task">
@@ -291,16 +304,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       <button class="btn btn-sub" id="skip">건너뛰기</button>
     </div>
 
-    <div class="settings" aria-label="시간 설정">
-      <div class="set"><label>집중 (분)</label>
-        <div class="step"><button data-k="focus" data-d="-1" aria-label="집중 시간 줄이기">−</button><output id="o-focus">25</output><button data-k="focus" data-d="1" aria-label="집중 시간 늘리기">+</button></div></div>
-      <div class="set"><label>짧은 휴식 (분)</label>
-        <div class="step"><button data-k="short" data-d="-1" aria-label="짧은 휴식 줄이기">−</button><output id="o-short">5</output><button data-k="short" data-d="1" aria-label="짧은 휴식 늘리기">+</button></div></div>
-      <div class="set"><label>긴 휴식 (분)</label>
-        <div class="step"><button data-k="long" data-d="-1" aria-label="긴 휴식 줄이기">−</button><output id="o-long">15</output><button data-k="long" data-d="1" aria-label="긴 휴식 늘리기">+</button></div></div>
-      <div class="set"><label>긴 휴식 주기 (회)</label>
-        <div class="step"><button data-k="every" data-d="-1" aria-label="주기 줄이기">−</button><output id="o-every">4</output><button data-k="every" data-d="1" aria-label="주기 늘리기">+</button></div></div>
-    </div>
+    <button class="set-link" id="open-set" type="button">설정</button>
   </section>
 
   <section class="stats" id="stats" aria-label="집중 시간 통계">
@@ -366,6 +370,28 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   </section>
 </main>
 
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+  <div class="panel">
+    <h2 id="sheet-title">설정</h2>
+    <p class="sub">시간은 이 기기에 저장됩니다.</p>
+    <div class="slist">
+      <div class="srow"><div><div class="t">집중</div><div class="d">한 세션의 집중 시간</div></div>
+        <div class="sstep"><button type="button" data-k="focus" data-d="-1" aria-label="집중 시간 줄이기">−</button><output id="o-focus">50</output><button type="button" data-k="focus" data-d="1" aria-label="집중 시간 늘리기">+</button></div></div>
+      <div class="srow"><div><div class="t">짧은 휴식</div><div class="d">집중 사이의 휴식</div></div>
+        <div class="sstep"><button type="button" data-k="short" data-d="-1" aria-label="짧은 휴식 줄이기">−</button><output id="o-short">10</output><button type="button" data-k="short" data-d="1" aria-label="짧은 휴식 늘리기">+</button></div></div>
+      <div class="srow"><div><div class="t">긴 휴식</div><div class="d">주기가 끝났을 때의 휴식</div></div>
+        <div class="sstep"><button type="button" data-k="long" data-d="-1" aria-label="긴 휴식 줄이기">−</button><output id="o-long">30</output><button type="button" data-k="long" data-d="1" aria-label="긴 휴식 늘리기">+</button></div></div>
+      <div class="srow"><div><div class="t">휴식 주기</div><div class="d">몇 번 집중하면 긴 휴식인지 (회)</div></div>
+        <div class="sstep"><button type="button" data-k="every" data-d="-1" aria-label="주기 줄이기">−</button><output id="o-every">4</output><button type="button" data-k="every" data-d="1" aria-label="주기 늘리기">+</button></div></div>
+    </div>
+    <p class="set-note" id="set-note" role="status"></p>
+    <div class="sfoot">
+      <button type="button" class="link" id="set-reset">기본값으로 되돌리기</button>
+      <button type="button" class="btn-solid" id="set-done">완료</button>
+    </div>
+  </div>
+</div>
+
 <footer><p>기록은 이 기기에 저장됩니다. 동기화를 켠 경우에만 코드와 함께 서버에 저장됩니다.</p></footer>
 
 <script>
@@ -375,7 +401,9 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
 
   var MODE_NAME = { focus: '집중', short: '짧은 휴식', long: '긴 휴식' };
-  var LIMITS = { focus: [1, 90], short: [1, 30], long: [1, 60], every: [2, 8] };
+  var LIMITS = { focus: [1, 120], short: [1, 60], long: [1, 90], every: [2, 8] };
+  var DEF = { focus: 50, short: 10, long: 30, every: 4 };
+  var OLD = { focus: 25, short: 5, long: 15, every: 4 };
   var DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
   function load(key, fallback) {
@@ -383,7 +411,16 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   }
   function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
 
-  var cfg = Object.assign({ focus: 25, short: 5, long: 15, every: 4 }, load('pomolog.cfg', {}));
+  var savedCfg = load('pomolog.cfg', {});
+  var migrated = false;
+  if (savedCfg.v !== 2) {
+    // 예전 기본값(25/5/15/4)을 그대로 쓰던 경우만 새 기본값(50/10/30/4)으로 바꿉니다.
+    var wasOld = ['focus', 'short', 'long', 'every'].every(function (k) { return savedCfg[k] === undefined || savedCfg[k] === OLD[k]; });
+    if (wasOld) { savedCfg = {}; migrated = true; }
+    savedCfg.v = 2;
+  }
+  var cfg = Object.assign({}, DEF, savedCfg);
+  save('pomolog.cfg', cfg);
   var sessions = load('pomolog.sessions', []);
   if (!Array.isArray(sessions)) sessions = [];
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
@@ -395,6 +432,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   var SB_URL = 'https://qcyaynrxflbcddwbkqpy.supabase.co';
   var SB_KEY = 'sb_publishable_RbidfIMX4EYam5erXUUbOA_z0FsSq9J';
   var st = Object.assign({ mode: 'focus', running: false, endAt: 0, left: 0, cycle: 0, label: '' }, load('pomolog.timer', {}));
+  if (migrated && !st.running && st.left === OLD[st.mode] * 60000) st.left = 0;
   var range = 7;
   var tick = null;
 
@@ -505,14 +543,51 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       var k = b.dataset.k, lim = LIMITS[k];
       cfg[k] = Math.min(lim[1], Math.max(lim[0], cfg[k] + Number(b.dataset.d)));
       save('pomolog.cfg', cfg);
-      if (!st.running && k === st.mode) st.left = total(st.mode);
+      var note = '';
+      if (k === st.mode) { if (st.running) note = '진행 중인 타이머에는 다음 세션부터 적용됩니다.'; else st.left = total(st.mode); }
+      $('#set-note').textContent = note;
       persist(); render();
     });
   });
 
+  /* 설정 시트 */
+  var sheet = $('#sheet'), lastFocus = null;
+  function openSet() {
+    lastFocus = document.activeElement;
+    $('#set-note').textContent = '';
+    sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    $('#set-done').focus();
+  }
+  function closeSet() {
+    sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  $('#open-set').addEventListener('click', openSet);
+  $('#nav-set').addEventListener('click', openSet);
+  $('#set-done').addEventListener('click', closeSet);
+  sheet.addEventListener('click', function (e) { if (e.target === sheet) closeSet(); });
+  $('#set-reset').addEventListener('click', function () {
+    Object.keys(DEF).forEach(function (k) { cfg[k] = DEF[k]; });
+    save('pomolog.cfg', cfg);
+    $('#set-note').textContent = st.running ? '진행 중인 타이머에는 다음 세션부터 적용됩니다.' : '기본값(50 / 10 / 30 / 4)으로 되돌렸습니다.';
+    if (!st.running) st.left = total(st.mode);
+    persist(); render();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!sheet.classList.contains('open')) return;
+    if (e.key === 'Escape') { closeSet(); return; }
+    if (e.key === 'Tab') {
+      var f = Array.prototype.slice.call(sheet.querySelectorAll('button')); var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
   document.addEventListener('keydown', function (e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+    if (e.code === 'Space') { if (sheet.classList.contains('open')) return; e.preventDefault(); toggle(); }
   });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
 
