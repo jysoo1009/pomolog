@@ -13,7 +13,7 @@
     if (has) {
       var h = location.hash;
       document.documentElement.style.visibility = 'hidden';
-      location.replace('/app' + (h === '#timer' || h === '#stats' ? h : ''));
+      location.replace('/app' + (h === '#timer' || h === '#tasks' || h === '#stats' ? h : ''));
     }
   } catch (e) {}
 })();
@@ -252,6 +252,8 @@ footer { background: var(--gray-1); padding: 32px 22px calc(28px + env(safe-area
           <li class="pill">작업 이름 기록</li>
           <li class="pill">7일·30일 그래프</li>
           <li class="pill">연속 기록</li>
+          <li class="pill">할 일 목록</li>
+          <li class="pill">예상 vs 실제 뽀모</li>
         </ul>
       </div>
     </div>
@@ -282,7 +284,7 @@ footer { background: var(--gray-1); padding: 32px 22px calc(28px + env(safe-area
 (function () {
   // 예전 공유 링크(#timer, #stats)는 앱으로 안내합니다.
   var h = location.hash;
-  if (h === '#timer' || h === '#stats') { location.replace('/app' + h); return; }
+  if (h === '#timer' || h === '#tasks' || h === '#stats') { location.replace('/app' + h); return; }
   if (h) history.replaceState(null, '', location.pathname + location.search);
   // 주소에 #을 남기지 않고 부드럽게 이동
   Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (a) {
