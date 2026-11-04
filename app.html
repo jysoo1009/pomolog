@@ -270,8 +270,10 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 .col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
 .col .v { font-size: 12px; color: var(--gray-3); height: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .col .b { width: 100%; background: var(--gray-2); min-height: 2px; transition: height .4s ease; }
-.col.today .b { background: var(--ink); }
-.col.today .v { color: var(--ink); font-weight: 600; }
+.col { padding: 0; cursor: pointer; }
+.col:hover .b { background: #b0b0b5; }
+.col.sel .b, .col.sel:hover .b { background: var(--ink); }
+.col.sel .v { color: var(--ink); font-weight: 600; }
 .col .d { font-size: 12px; color: var(--gray-3); margin-top: 10px; height: 18px; white-space: nowrap; width: 0; display: flex; justify-content: center; overflow: visible; }
 .chart:not(.dense) .col .d { width: auto; }
 .chart.dense .col.today .d { justify-content: flex-end; }
@@ -281,6 +283,54 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 
 .log { list-style: none; }
 .log li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--gray-2); }
+.log .lt { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.log .tm { flex-shrink: 0; font-size: 14px; color: var(--gray-3); font-variant-numeric: tabular-nums; }
+.log .name.etc { color: var(--gray-3); }
+
+/* 기록: 날짜별 돌아보기 */
+.cwrap { margin-top: 96px; }
+.day-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 96px; padding-bottom: 16px; border-bottom: 1px solid var(--ink); }
+.day-nav { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.day-title { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.day-title small { font-size: 14px; font-weight: 400; color: var(--gray-3); margin-left: 8px; letter-spacing: 0; }
+.arrow { position: relative; width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--gray-2); transition: border-color .2s; }
+.arrow:hover:not(:disabled) { border-color: var(--ink); }
+.arrow::before { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-left: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+.arrow.prev::before { transform: translate(-25%, -50%) rotate(45deg); }
+.arrow.next::before { transform: translate(-75%, -50%) rotate(-135deg); }
+.arrow:disabled { opacity: .3; cursor: default; }
+.vtabs { display: flex; gap: 20px; }
+.vtabs button { font-size: 14px; color: var(--gray-3); padding: 2px 0; border-bottom: 1px solid transparent; }
+.vtabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.dsum { display: grid; grid-template-columns: repeat(3, 1fr); }
+.dsum > div { padding: 20px 24px 0 0; }
+.dsum > div + div { padding-left: 24px; border-left: 1px solid var(--gray-2); }
+.dsum dt { font-size: 14px; color: var(--gray-3); }
+.dsum dd { font-size: 36px; line-height: 1.1; font-weight: 600; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.dsum dd small { font-size: 15px; font-weight: 400; color: var(--gray-3); margin-left: 3px; letter-spacing: 0; }
+.carry { margin-top: 24px; font-size: 14px; color: var(--gray-4); }
+.dgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 80px; margin-top: 56px; }
+.dgrid > div { min-width: 0; }
+.blk + .blk { margin-top: 48px; }
+.blk[hidden] + .blk { margin-top: 0; }
+.bh { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 10px; border-bottom: 1px solid var(--gray-2); }
+.bh h4 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.bh .cnt { font-size: 14px; color: var(--gray-3); }
+.dlist, .hbars { list-style: none; }
+.dlist li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--gray-2); }
+.dlist .nm { font-size: 17px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dlist .meta { flex-shrink: 0; font-size: 13px; color: var(--gray-3); font-variant-numeric: tabular-nums; }
+.dlist .meta b { color: var(--ink); font-weight: 600; }
+.hbars li { padding: 12px 0 0; }
+.hb-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 15px; }
+.hb-top .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hb-top .nm.etc { color: var(--gray-3); }
+.hb-top .v { flex-shrink: 0; font-size: 14px; color: var(--gray-4); font-variant-numeric: tabular-nums; }
+.hb-track { height: 6px; margin-top: 8px; background: var(--gray-1); }
+.hb-fill { height: 100%; background: var(--ink); min-width: 2px; }
+.bempty { padding: 16px 0; font-size: 15px; color: var(--gray-3); }
+.rec-foot { display: flex; align-items: center; gap: 28px; margin-top: 56px; }
+.rec-foot .clear { margin-top: 0; }
 .log .name { font-size: 17px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .log .meta { font-size: 12px; color: var(--gray-3); margin-top: 2px; }
 .log .right { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
@@ -323,6 +373,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
 @media (max-width: 960px) {
   .h2 { font-size: 40px; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 72px; }
+  .dgrid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
   .sync { grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 88px; }
   .tgrid { grid-template-columns: minmax(0, 1fr); gap: 64px; }
   .add { flex-direction: column; align-items: stretch; gap: 18px; }
@@ -371,6 +422,16 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   .kpi dd { font-size: 32px; }
   .kpi dd small { font-size: 14px; }
   .grid { margin-top: 64px; gap: 56px; }
+  .cwrap { margin-top: 64px; }
+  .day-head { margin-top: 64px; }
+  .day-title { font-size: 22px; }
+  .day-title small { display: block; margin: 2px 0 0; }
+  .dsum > div { padding: 16px 10px 0 0; }
+  .dsum > div + div { padding-left: 14px; }
+  .dsum dd { font-size: 26px; }
+  .dsum dd small { font-size: 13px; }
+  .rec-foot { flex-direction: column; align-items: stretch; gap: 16px; }
+  .rec-foot .btn-line { flex: none; }
   .sync { margin-top: 64px; }
   .code { font-size: 22px; }
   .join { flex-direction: column; align-items: stretch; gap: 16px; }
@@ -393,7 +454,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     <nav class="nav-links" aria-label="바로가기">
       <a href="#timer" data-go="timer">타이머</a>
       <a href="#tasks" data-go="tasks">할 일</a>
-      <a href="#stats" data-go="stats">통계</a>
+      <a href="#stats" data-go="stats">기록</a>
       <button type="button" class="nav-btn" id="nav-set">설정</button>
     </nav>
   </div>
@@ -477,10 +538,10 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     </div>
   </section>
 
-  <section class="stats" id="stats" aria-label="집중 시간 통계">
+  <section class="stats" id="stats" aria-label="기록">
     <div class="wrap">
-      <h2 class="h2">집중 시간 통계</h2>
-      <p class="lead">완료한 집중 세션이 이 기기에 자동으로 기록됩니다.</p>
+      <h2 class="h2">기록</h2>
+      <p class="lead">날짜별로 무엇을 했는지 돌아보세요.</p>
 
       <dl class="kpis">
         <div class="kpi"><dt>오늘</dt><dd id="k-today">0<small>분</small></dd></div>
@@ -489,22 +550,47 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
         <div class="kpi"><dt>누적 세션</dt><dd id="k-total">0<small>회</small></dd></div>
       </dl>
 
-      <div class="grid">
-        <div>
-          <div class="head">
-            <h3>일별 집중 시간</h3>
-            <div class="range" role="tablist" aria-label="기간">
-              <button role="tab" data-r="7" aria-selected="true">7일</button>
-              <button role="tab" data-r="30" aria-selected="false">30일</button>
-            </div>
+      <div class="cwrap">
+        <div class="head">
+          <h3>일별 집중 시간</h3>
+          <div class="range" role="tablist" aria-label="기간">
+            <button role="tab" data-r="7" aria-selected="true">7일</button>
+            <button role="tab" data-r="30" aria-selected="false">30일</button>
           </div>
-          <div class="chart" id="chart" aria-label="일별 집중 시간 막대 그래프"></div>
+        </div>
+        <div class="chart" id="chart" role="group" aria-label="일별 집중 시간. 막대를 누르면 그날 기록을 봅니다"></div>
+      </div>
+
+      <div class="day-head">
+        <div class="day-nav">
+          <button type="button" class="arrow prev" id="day-prev" aria-label="이전"></button>
+          <h3 class="day-title" id="day-title" aria-live="polite"></h3>
+          <button type="button" class="arrow next" id="day-next" aria-label="다음"></button>
+        </div>
+        <div class="vtabs" role="tablist" aria-label="보기">
+          <button type="button" role="tab" data-v="day" aria-selected="true">하루</button>
+          <button type="button" role="tab" data-v="week" aria-selected="false">이번 주</button>
+        </div>
+      </div>
+      <dl class="dsum">
+        <div><dt>집중 시간</dt><dd id="ds-min">0<small>분</small></dd></div>
+        <div><dt>끝낸 일</dt><dd id="ds-done">0<small>개</small></dd></div>
+        <div><dt>뽀모</dt><dd id="ds-pomo">0<small>회</small></dd></div>
+      </dl>
+      <p class="carry" id="carry" hidden></p>
+      <div class="dgrid">
+        <div>
+          <div class="blk"><div class="bh"><h4>끝낸 일</h4><span class="cnt" id="ds-dcount"></span></div><ul class="dlist" id="ds-donelist"></ul></div>
+          <div class="blk"><div class="bh"><h4 id="grp-title">할 일별 집중 시간</h4></div><ul class="hbars" id="ds-groups"></ul></div>
         </div>
         <div>
-          <div class="head"><h3>최근 기록</h3></div>
-          <ul class="log" id="log"></ul>
-          <button class="clear" id="clear" hidden>모든 기록 삭제</button>
+          <div class="blk" id="blk-tags" hidden><div class="bh"><h4>태그별 합계</h4></div><ul class="hbars" id="ds-tags"></ul></div>
+          <div class="blk" id="blk-sessions"><div class="bh"><h4>세션</h4><span class="cnt" id="ds-scount"></span></div><ul class="log" id="log"></ul></div>
         </div>
+      </div>
+      <div class="rec-foot">
+        <button type="button" class="btn-line" id="csv-btn">CSV 내보내기</button>
+        <button class="clear" id="clear" hidden>모든 기록 삭제</button>
       </div>
 
       <div class="sync" id="sync">
@@ -943,60 +1029,224 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     setKpi('#k-streak', streak, '일');
     setKpi('#k-total', sessions.length, '회');
 
-    /* chart */
+    /* 선택 범위(하루 또는 월요일 시작 주) */
+    var rg = selRange();
+
+    /* chart: 막대를 누르면 그날 선택 */
     var chart = $('#chart'); chart.innerHTML = '';
     chart.classList.toggle('dense', range > 7);
     var vals = [], max = 1;
     for (var j = range - 1; j >= 0; j--) {
       var dd = new Date(now); dd.setDate(dd.getDate() - j);
       var v = map[key(dd)] || 0; if (v > max) max = v;
-      vals.push({ d: dd, v: v, last: j === 0 });
+      vals.push({ d: dd, k: key(dd), v: v, last: j === 0 });
     }
     vals.forEach(function (x, idx) {
-      var col = document.createElement('div');
-      col.className = 'col' + (x.last ? ' today' : '') + ((range <= 7 || idx % 5 === (range - 1) % 5) ? ' show' : '');
+      var col = document.createElement('button'); col.type = 'button';
+      var isSel = x.k >= rg.from && x.k <= rg.to;
+      col.className = 'col' + (x.last ? ' today' : '') + (isSel ? ' sel' : '') + ((range <= 7 || idx % 5 === (range - 1) % 5) ? ' show' : '');
+      col.setAttribute('aria-pressed', String(isSel && view === 'day'));
+      col.setAttribute('aria-label', (x.d.getMonth() + 1) + '월 ' + x.d.getDate() + '일 ' + x.v + '분');
       var v = document.createElement('div'); v.className = 'v'; v.textContent = x.v ? x.v + '분' : '';
       var b = document.createElement('div'); b.className = 'b';
       b.style.height = (x.v / max * (chart.clientHeight - 80)) + 'px';
-      b.title = key(x.d) + ' · ' + x.v + '분';
       var dl = document.createElement('div'); dl.className = 'd';
       dl.textContent = range <= 7 ? (x.last ? '오늘' : DAYS[x.d.getDay()]) : (x.d.getMonth() + 1) + '/' + x.d.getDate();
-      col.appendChild(v); col.appendChild(b); col.appendChild(dl); chart.appendChild(col);
+      col.appendChild(v); col.appendChild(b); col.appendChild(dl);
+      col.addEventListener('click', function () { pickDay(x.k); });
+      chart.appendChild(col);
     });
 
-    /* log */
-    var log = $('#log'); log.innerHTML = '';
-    var recent = sessions.slice().sort(function (a, b) { return b.t - a.t; }).slice(0, 8);
-    if (!recent.length) {
-      var li = document.createElement('li'); li.style.display = 'block'; li.style.borderBottom = '0';
-      li.className = 'empty'; li.textContent = '아직 기록이 없습니다. 첫 집중을 시작해 보세요.';
-      log.appendChild(li);
-    }
-    recent.forEach(function (s) {
-      var dt = new Date(s.t);
-      var li = document.createElement('li');
-      var left = document.createElement('div'); left.style.minWidth = 0;
-      var nm = document.createElement('div'); nm.className = 'name'; nm.textContent = s.label || '집중';
-      var mt = document.createElement('div'); mt.className = 'meta';
-      var hh = dt.getHours(), mm = dt.getMinutes();
-      mt.textContent = (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 ' + DAYS[dt.getDay()] + ' · ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
-      left.appendChild(nm); left.appendChild(mt);
-      var right = document.createElement('div'); right.className = 'right';
-      var mn = document.createElement('span'); mn.className = 'min'; mn.textContent = s.min + '분';
-      var del = document.createElement('button'); del.className = 'del'; del.textContent = '삭제';
-      del.setAttribute('aria-label', '이 기록 삭제');
-      del.addEventListener('click', function () {
-        sessions = sessions.filter(function (x) { return x !== s; });
-        sy.deleted.push(s.id); saveSy();
-        save('pomolog.sessions', sessions); renderStats();
-        showUndo(s);
-      });
-      right.appendChild(mn); right.appendChild(del);
-      li.appendChild(left); li.appendChild(right); log.appendChild(li);
-    });
+    renderDay(rg);
     $('#clear').hidden = !sessions.length;
     renderTasks();
   }
+
+  /* ───────── 기록: 선택한 날 / 이번 주 ───────── */
+  var selDay = key(new Date()), selFollow = true, view = 'day';
+  function fromKey(k) { var p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function addDays(k, n) { var d = fromKey(k); d.setDate(d.getDate() + n); return key(d); }
+  function weekStart(k) { var d = fromKey(k); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return key(d); }
+  function hm(t) { var d = new Date(t), h = d.getHours(), m = d.getMinutes(); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function minText(n) { var x = minutesText(n); return x.v + x.u; }
+  function md(k) { var d = fromKey(k); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; }
+  function selRange() {
+    var today = key(new Date());
+    if (selFollow || selDay > today) selDay = today;
+    if (view === 'week') { var f = weekStart(selDay); return { from: f, to: addDays(f, 6) }; }
+    return { from: selDay, to: selDay };
+  }
+  function pickDay(k) { selDay = k; selFollow = k === key(new Date()); view = 'day'; renderStats(); }
+  // 할 일별로 묶기: taskId → (없으면) 같은 제목의 할 일 → label → '기타'
+  function groupSessions(list) {
+    var byTitle = {}; tasks.forEach(function (t) { if (!(t.title in byTitle)) byTitle[t.title] = t; });
+    var g = {}, keys = [];
+    list.forEach(function (s) {
+      var k, name, etc = false;
+      if (s.taskId) { var t = findTask(s.taskId); k = 't:' + s.taskId; name = t ? t.title : (s.label || '기타'); etc = !t && !s.label; }
+      else if (s.label && byTitle[s.label]) { k = 't:' + byTitle[s.label].id; name = byTitle[s.label].title; }
+      else if (s.label) { k = 'l:' + s.label; name = s.label; }
+      else { k = 'etc'; name = '기타'; etc = true; }
+      if (!g[k]) { g[k] = { name: name, min: 0, n: 0, etc: etc }; keys.push(k); }
+      g[k].min += s.min; g[k].n++;
+    });
+    return keys.map(function (k) { return g[k]; }).sort(function (a, b) { return b.min - a.min; });
+  }
+  // 할 일의 전체 실제 뽀모 수와 집중 분 (taskId 우선, 없으면 제목 매칭)
+  function taskAgg() {
+    var nId = {}, mId = {}, nL = {}, mL = {};
+    sessions.forEach(function (s) {
+      if (s.taskId) { nId[s.taskId] = (nId[s.taskId] || 0) + 1; mId[s.taskId] = (mId[s.taskId] || 0) + s.min; }
+      else if (s.label) { nL[s.label] = (nL[s.label] || 0) + 1; mL[s.label] = (mL[s.label] || 0) + s.min; }
+    });
+    return { n: function (t) { return (nId[t.id] || 0) + (nL[t.title] || 0); }, min: function (t) { return (mId[t.id] || 0) + (mL[t.title] || 0); } };
+  }
+  function hbars(ul, groups, emptyText) {
+    ul.innerHTML = '';
+    if (!groups.length) { var e = document.createElement('li'); e.className = 'bempty'; e.textContent = emptyText; ul.appendChild(e); return; }
+    var top = groups[0].min || 1;
+    groups.forEach(function (g) {
+      var li = document.createElement('li');
+      var row = document.createElement('div'); row.className = 'hb-top';
+      var nm = document.createElement('span'); nm.className = 'nm' + (g.etc ? ' etc' : ''); nm.textContent = g.name;
+      var v = document.createElement('span'); v.className = 'v'; v.textContent = minText(g.min) + (g.n != null ? ' · ' + g.n + '회' : '');
+      row.appendChild(nm); row.appendChild(v);
+      var tr = document.createElement('div'); tr.className = 'hb-track';
+      var fl = document.createElement('div'); fl.className = 'hb-fill'; fl.style.width = Math.max(1, g.min / top * 100) + '%';
+      tr.appendChild(fl); li.appendChild(row); li.appendChild(tr); ul.appendChild(li);
+    });
+  }
+  function renderDay(rg) {
+    var today = key(new Date()), wk = view === 'week';
+    var inR = function (t) { var k = key(new Date(t)); return k >= rg.from && k <= rg.to; };
+    var list = sessions.filter(function (s) { return inR(s.t); }).sort(function (a, b) { return a.t - b.t; });
+    var doneList = tasks.filter(function (t) { return t.doneAt && inR(t.doneAt); }).sort(function (a, b) { return a.doneAt - b.doneAt; });
+    var total = list.reduce(function (a, s) { return a + s.min; }, 0);
+
+    // 제목 + ‹ ›
+    var tt = $('#day-title'); tt.innerHTML = '';
+    var sm = document.createElement('small');
+    if (wk) {
+      var thisWk = weekStart(today);
+      tt.appendChild(document.createTextNode(rg.from === thisWk ? '이번 주' : rg.from === addDays(thisWk, -7) ? '지난주' : md(rg.from) + '부터'));
+      var a = fromKey(rg.from), b = fromKey(rg.to);
+      sm.textContent = md(rg.from) + ' – ' + (a.getMonth() === b.getMonth() ? b.getDate() + '일' : md(rg.to));
+    } else {
+      var d = fromKey(rg.from);
+      tt.appendChild(document.createTextNode(md(rg.from) + ' (' + DAYS[d.getDay()] + ')'));
+      sm.textContent = rg.from === today ? '오늘' : rg.from === addDays(today, -1) ? '어제' : '';
+    }
+    if (sm.textContent) tt.appendChild(sm);
+    $('#day-prev').setAttribute('aria-label', wk ? '이전 주' : '전날');
+    $('#day-next').setAttribute('aria-label', wk ? '다음 주' : '다음 날');
+    $('#day-next').disabled = wk ? addDays(rg.from, 7) > today : rg.from >= today;
+    $$('.vtabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x.dataset.v === view)); });
+
+    // 요약
+    var tx = minutesText(total); setKpi('#ds-min', tx.v, tx.u);
+    setKpi('#ds-done', doneList.length, '개');
+    setKpi('#ds-pomo', list.length, '회');
+
+    // 못 끝낸 할 일 안내 (오늘을 보고 있을 때만)
+    var left = listOf('today').length, carry = $('#carry');
+    carry.hidden = !(!wk && rg.from === today && left > 0);
+    if (!carry.hidden) carry.textContent = '못 끝낸 ' + left + '개는 내일로 넘어가요';
+
+    // 끝낸 일: 예상 N → 실제 M · 집중 분
+    var agg = taskAgg(), dl = $('#ds-donelist'); dl.innerHTML = '';
+    $('#ds-dcount').textContent = doneList.length ? doneList.length + '개' : '';
+    if (!doneList.length) { var e = document.createElement('li'); e.className = 'bempty'; e.textContent = wk ? '이번 주에 끝낸 일이 없어요.' : '이날 끝낸 일이 없어요.'; dl.appendChild(e); }
+    doneList.forEach(function (t) {
+      var li = document.createElement('li');
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t.title;
+      var meta = document.createElement('span'); meta.className = 'meta';
+      meta.innerHTML = '예상 ' + t.est + ' → 실제 <b>' + agg.n(t) + '</b> · ' + minText(agg.min(t));
+      li.appendChild(nm); li.appendChild(meta); dl.appendChild(li);
+    });
+
+    // 할 일별 집중 시간 / 합계
+    var groups = groupSessions(list);
+    $('#grp-title').textContent = wk ? '할 일별 합계' : '할 일별 집중 시간';
+    hbars($('#ds-groups'), groups, wk ? '이번 주 기록이 없어요.' : '이날 기록이 없어요.');
+
+    // 태그별 합계(주간): 제목의 #태그
+    $('#blk-tags').hidden = !wk;
+    if (wk) {
+      var tg = {}, tk = [];
+      groups.forEach(function (g) {
+        if (g.etc) return;
+        (g.name.match(/#[^\s#]+/g) || []).forEach(function (t) { if (!tg[t]) { tg[t] = { name: t, min: 0, n: 0 }; tk.push(t); } tg[t].min += g.min; tg[t].n += g.n; });
+      });
+      hbars($('#ds-tags'), tk.map(function (t) { return tg[t]; }).sort(function (a, b) { return b.min - a.min; }), '할 일 제목에 #생물 처럼 태그를 넣으면 여기에 모아 보여요.');
+    }
+
+    // 세션 목록(하루 보기): 시각 · 할 일 · 분, 삭제
+    $('#blk-sessions').hidden = wk;
+    var log = $('#log'); log.innerHTML = '';
+    $('#ds-scount').textContent = list.length ? list.length + '개' : '';
+    if (!wk) {
+      if (!list.length) { var e2 = document.createElement('li'); e2.className = 'bempty'; e2.style.display = 'block'; e2.textContent = '이날은 기록이 없어요.'; log.appendChild(e2); }
+      list.forEach(function (s) {
+        var li = document.createElement('li');
+        var lt = document.createElement('div'); lt.className = 'lt';
+        var tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = hm(s.t);
+        var nm = document.createElement('span'); nm.className = 'name' + (s.label ? '' : ' etc'); nm.textContent = s.label || '기타';
+        lt.appendChild(tm); lt.appendChild(nm);
+        var right = document.createElement('div'); right.className = 'right';
+        var mn = document.createElement('span'); mn.className = 'min'; mn.textContent = s.min + '분';
+        var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = '삭제';
+        del.setAttribute('aria-label', hm(s.t) + ' 기록 삭제');
+        del.addEventListener('click', function () {
+          sessions = sessions.filter(function (x) { return x !== s; });
+          sy.deleted.push(s.id); saveSy();
+          save('pomolog.sessions', sessions); renderStats();
+          showUndo(s);
+        });
+        right.appendChild(mn); right.appendChild(del);
+        li.appendChild(lt); li.appendChild(right); log.appendChild(li);
+      });
+    }
+  }
+  $('#day-prev').addEventListener('click', function () { var rg = selRange(); selDay = addDays(rg.from, view === 'week' ? -7 : -1); selFollow = false; renderStats(); });
+  $('#day-next').addEventListener('click', function () {
+    var rg = selRange(), today = key(new Date());
+    var nk = addDays(rg.from, view === 'week' ? 7 : 1);
+    if (nk > today || (view === 'week' && nk >= weekStart(today))) nk = today; // 이번 주로 돌아오면 오늘을 기준으로
+    selDay = nk; selFollow = nk === today; renderStats();
+  });
+  $$('.vtabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.v === 'week') { view = 'week'; selDay = key(new Date()); selFollow = true; } // 이번 주로
+      else view = 'day';
+      renderStats();
+    });
+  });
+
+  /* CSV 내보내기: 엑셀에서 한글이 깨지지 않도록 UTF-8 BOM */
+  function csvCell(v) {
+    var s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // 수식으로 해석되지 않게
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function exportCsv() {
+    var agg = taskAgg(), rows = [];
+    rows.push(['[세션]']);
+    rows.push(['날짜', '시각', '분', '할 일']);
+    sessions.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (s) { rows.push([key(new Date(s.t)), hm(s.t), s.min, s.label || '']); });
+    rows.push([]);
+    rows.push(['[할 일]']);
+    rows.push(['제목', '예상', '실제', '상태', '완료일']);
+    listOf('today').concat(listOf('later'), listOf('done')).forEach(function (t) {
+      rows.push([t.title, t.est, agg.n(t), t.doneAt ? '완료' : (t.day ? '오늘' : '나중에'), t.doneAt ? key(new Date(t.doneAt)) : '']);
+    });
+    var csv = '\uFEFF' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n') + '\r\n';
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'pomolog-' + key(new Date()).replace(/-/g, '') + '.csv';
+    document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  $('#csv-btn').addEventListener('click', exportCsv);
 
   $$('.range button').forEach(function (b) {
     b.addEventListener('click', function () {
