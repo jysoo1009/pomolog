@@ -64,9 +64,9 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 .nav-links a { font-size: 12px; color: rgba(245,245,247,.8); transition: color .2s; }
 .nav-links a:hover { color: #fff; }
 
-.hero { background: #000; color: #f5f5f7; min-height: calc(100vh - var(--nav-h)); min-height: calc(100svh - var(--nav-h)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 64px 22px; }
+.hero { background: #000; color: #f5f5f7; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 88px 22px 104px; }
 .eyebrow { font-size: 17px; color: var(--gray-3); }
-.title { font-size: clamp(72px, 17vw, 208px); font-weight: 600; line-height: 1; letter-spacing: -0.05em; margin: 20px 0 28px; }
+.title { font-size: clamp(64px, 13vw, 168px); font-weight: 600; line-height: 1; letter-spacing: -0.05em; margin: 20px 0 28px; }
 .sub { font-size: clamp(19px, 2.4vw, 28px); line-height: 1.3; color: #a1a1a6; max-width: 640px; }
 .sub b { color: #f5f5f7; font-weight: 600; }
 .cta { display: flex; gap: 28px; align-items: center; margin-top: 48px; }
@@ -74,6 +74,33 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 .btn:hover { background: #fff; }
 .more { font-size: 17px; color: #f5f5f7; border-bottom: 1px solid transparent; padding: 4px 0; transition: border-color .2s; }
 .more:hover { border-bottom-color: #f5f5f7; }
+
+/* Product preview */
+.preview { display: block; width: min(920px, 100%); margin-top: 72px; text-align: left; color: inherit; border: 1px solid #2c2c2e; background: #000; transition: border-color .25s; }
+.preview:hover { border-color: #6e6e73; }
+.pv-grid { display: grid; grid-template-columns: 1.15fr 1fr; }
+.pv-timer { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px 32px 34px; background: #000; }
+.pv-modes { display: flex; gap: 20px; font-size: 12px; color: var(--gray-3); }
+.pv-modes span { padding-bottom: 3px; border-bottom: 1px solid transparent; }
+.pv-modes .on { color: #f5f5f7; border-bottom-color: #f5f5f7; }
+.pv-time { font-size: clamp(64px, 9vw, 108px); font-weight: 200; letter-spacing: -0.04em; line-height: 1; margin: 30px 0 22px; font-variant-numeric: tabular-nums; }
+.pv-bar { width: 100%; height: 1px; background: var(--gray-4); }
+.pv-btn { display: inline-flex; align-items: center; justify-content: center; width: 148px; height: 40px; margin-top: 26px; font-size: 14px; background: #f5f5f7; color: #000; transition: background .2s; }
+.preview:hover .pv-btn { background: #fff; }
+.pv-stats { background: #fff; color: var(--ink); padding: 28px 32px; display: flex; flex-direction: column; }
+.pv-label { font-size: 12px; color: var(--gray-3); }
+.pv-big { font-size: 36px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.pv-big small { font-size: 14px; font-weight: 400; color: var(--gray-3); margin-left: 2px; letter-spacing: 0; }
+.pv-sub { display: flex; gap: 28px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-2); }
+.pv-sub b { display: block; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.pv-chart-head { margin-top: 26px; }
+.pv-chart { display: flex; align-items: flex-end; gap: 6px; height: 72px; margin-top: 10px; }
+.pv-chart i { flex: 1; display: block; background: var(--gray-2); }
+.pv-chart i.today { background: var(--ink); }
+.pv-days { display: flex; gap: 6px; margin-top: 8px; font-size: 10px; color: var(--gray-3); text-align: center; }
+.pv-days span { flex: 1; }
+.pv-days .today { color: var(--ink); font-weight: 600; }
+.pv-caption { margin-top: 16px; font-size: 12px; color: var(--gray-3); }
 
 .features { padding: 140px 22px 0; }
 .wrap { max-width: 1080px; margin: 0 auto; }
@@ -115,7 +142,14 @@ footer { background: var(--gray-1); padding: 32px 22px calc(28px + env(safe-area
 }
 @media (max-width: 640px) {
   .nav-in { padding: 0 18px; }
-  .hero { padding: 48px 18px; }
+  .hero { padding: 56px 18px 72px; }
+  .preview { margin-top: 48px; }
+  .pv-grid { grid-template-columns: 1fr; }
+  .pv-timer { padding: 24px 20px 28px; }
+  .pv-time { font-size: clamp(72px, 24vw, 104px); margin: 24px 0 18px; }
+  .pv-stats { padding: 22px 20px 24px; }
+  .pv-big { font-size: 32px; }
+  .pv-chart { height: 64px; }
   .cta { flex-direction: column; gap: 20px; width: 100%; margin-top: 40px; }
   .btn { width: 100%; }
   .features { padding: 88px 18px 0; }
@@ -157,6 +191,31 @@ footer { background: var(--gray-1); padding: 32px 22px calc(28px + env(safe-area
       <a class="btn" href="/app">시작하기</a>
       <a class="more" href="#features" data-go="features">기능 살펴보기</a>
     </div>
+
+    <a class="preview" href="/app" aria-label="Pomolog 앱 열기">
+      <div class="pv-grid" aria-hidden="true">
+        <div class="pv-timer">
+          <div class="pv-modes"><span class="on">집중</span><span>짧은 휴식</span><span>긴 휴식</span></div>
+          <div class="pv-time">50:00</div>
+          <div class="pv-bar"></div>
+          <span class="pv-btn">시작</span>
+        </div>
+        <div class="pv-stats">
+          <span class="pv-label">오늘 집중 시간</span>
+          <div class="pv-big">2<small>시간</small> 30<small>분</small></div>
+          <div class="pv-sub">
+            <div><span class="pv-label">연속 기록</span><b>5일</b></div>
+            <div><span class="pv-label">이번 주</span><b>9시간 10분</b></div>
+          </div>
+          <span class="pv-label pv-chart-head">최근 7일</span>
+          <div class="pv-chart">
+            <i style="height:46%"></i><i style="height:72%"></i><i style="height:30%"></i><i style="height:88%"></i><i style="height:58%"></i><i style="height:66%"></i><i class="today" style="height:100%"></i>
+          </div>
+          <div class="pv-days"><span>목</span><span>금</span><span>토</span><span>일</span><span>월</span><span>화</span><span class="today">오늘</span></div>
+        </div>
+      </div>
+    </a>
+    <p class="pv-caption">예시 화면입니다. 눌러서 직접 시작해 보세요.</p>
   </section>
 
   <section class="features" id="features">
