@@ -140,6 +140,13 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 .sstep button:hover { border-color: var(--ink); }
 .sstep button:active { background: var(--gray-1); }
 .sstep output { min-width: 56px; text-align: center; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+#leave .panel { width: min(420px, calc(100% - 44px)); }
+.lv-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.lv-actions .btn-solid, .lv-actions .btn-line { width: 100%; height: 48px; }
+.lv-actions .link { align-self: center; margin-top: 4px; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 60; display: flex; align-items: center; gap: 24px; padding: 14px 18px; background: #1d1d1f; color: #f5f5f7; font-size: 14px; white-space: nowrap; border-radius: 0; opacity: 0; visibility: hidden; transform: translate(-50%, 8px); transition: opacity .2s, transform .2s, visibility .2s; }
+.toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.toast button { color: #fff; font-size: 14px; font-weight: 600; padding: 4px 0; border-bottom: 1px solid #fff; }
 .set-note { font-size: 12px; color: var(--gray-3); min-height: 18px; margin-top: 14px; }
 .sfoot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 16px; }
 .sfoot .btn-solid { min-width: 120px; }
@@ -245,6 +252,9 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   .panel { width: 100%; max-height: 92%; padding: 28px 18px calc(20px + env(safe-area-inset-bottom)); }
   .panel h2 { font-size: 28px; }
   .sfoot .btn-solid { flex: 1; }
+  #leave .panel { width: 100%; }
+  .lv-actions .btn-solid, .lv-actions .btn-line, .join .btn-line { flex: none; }
+  .toast { width: calc(100% - 36px); justify-content: space-between; }
   .stats { padding: 80px 18px 0; }
   .h2 { font-size: 32px; }
   .lead { font-size: 17px; }
@@ -372,6 +382,23 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   </section>
 </main>
 
+<div class="sheet" id="leave" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-sub" aria-hidden="true">
+  <div class="panel">
+    <h2 id="leave-title">집중을 마칠까요?</h2>
+    <p class="sub" id="leave-sub"></p>
+    <div class="lv-actions">
+      <button type="button" class="btn-solid" id="lv-save"></button>
+      <button type="button" class="btn-line" id="lv-drop">기록하지 않기</button>
+      <button type="button" class="link" id="lv-cancel">취소</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-text">기록을 삭제했어요</span>
+  <button type="button" id="toast-undo">되돌리기</button>
+</div>
+
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
   <div class="panel">
     <h2 id="sheet-title">설정</h2>
@@ -440,6 +467,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
 
   function total(mode) { return cfg[mode] * 60 * 1000; }
   if (!st.left) st.left = total(st.mode);
+  if (!st.dur) st.dur = total(st.mode); // 세션 길이(ms). 설정을 바꿔도 진행 중인 세션은 이 값 기준
   $('#label').value = st.label || '';
 
   function persist() { save('pomolog.timer', st); }
@@ -456,9 +484,9 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     var t = fmt(left);
     $('#time').textContent = t;
     document.title = (st.running ? t + ' · ' : '') + 'Pomolog · ' + MODE_NAME[st.mode];
-    var done = 1 - left / total(st.mode);
+    var done = 1 - left / st.dur;
     $('#prog').style.width = Math.min(100, Math.max(0, done * 100)) + '%';
-    $('#toggle').textContent = st.running ? '일시정지' : (left < total(st.mode) ? '계속' : '시작');
+    $('#toggle').textContent = st.running ? '일시정지' : (left < st.dur ? '계속' : '시작');
     $$('.mode').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.mode === st.mode); });
     var n = st.cycle % cfg.every;
     $('#eyebrow').textContent = st.mode === 'focus'
@@ -468,24 +496,40 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     ['focus', 'short', 'long', 'every'].forEach(function (k) { $('#o-' + k).textContent = cfg[k]; });
   }
 
-  function beep() {
+  var audioCtx = null;
+  // 사용자 제스처(시작 버튼) 안에서 한 번만 만들고 resume. 이후 beep()은 같은 컨텍스트를 재사용합니다.
+  function unlockAudio() {
     try {
       var C = window.AudioContext || window.webkitAudioContext;
-      var ctx = new C();
-      [0, 0.28, 0.56].forEach(function (d) {
-        var o = ctx.createOscillator(), g = ctx.createGain();
-        o.type = 'sine'; o.frequency.value = 880;
-        g.gain.setValueAtTime(0.0001, ctx.currentTime + d);
-        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + d + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d + 0.22);
-        o.connect(g); g.connect(ctx.destination);
-        o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.25);
-      });
+      if (!C) return;
+      if (!audioCtx) audioCtx = new C();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     } catch (e) {}
   }
+  function beep() {
+    try {
+      if (!audioCtx) unlockAudio();
+      var ctx = audioCtx; if (!ctx) return;
+      var play = function () {
+        [0, 0.28, 0.56].forEach(function (d) {
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = 880;
+          g.gain.setValueAtTime(0.0001, ctx.currentTime + d);
+          g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + d + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d + 0.22);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.25);
+        });
+      };
+      if (ctx.state === 'suspended') ctx.resume().then(play, function () {}); else play();
+    } catch (e) {}
+  }
+  // 첫 터치/키 입력 때도 한 번 풀어 둡니다(새로고침 후 이어진 타이머의 알림음용).
+  document.addEventListener('pointerdown', unlockAudio, { once: true });
+  document.addEventListener('keydown', unlockAudio, { once: true });
 
   function setMode(mode, keepNote) {
-    st.mode = mode; st.running = false; st.left = total(mode); st.endAt = 0;
+    st.mode = mode; st.running = false; st.left = total(mode); st.dur = st.left; st.endAt = 0;
     if (!keepNote) hideAway();
     stopTick(); persist(); render();
   }
@@ -494,9 +538,10 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   // away=true: 앱이 백그라운드/종료 상태일 때 이미 끝난 타이머를 돌아와서 정산하는 경우
   function complete(away) {
     stopTick();
+    if (activeSheet === leave) { pendingAction = null; closeSheet(leave); } // 확인 시트가 열려 있는 사이 끝난 경우
     var wasFocus = st.mode === 'focus';
     var finishedAt = st.endAt && st.endAt <= Date.now() ? st.endAt : Date.now();
-    var doneMin = cfg[st.mode];
+    var doneMin = Math.max(1, Math.round(st.dur / 60000));
     if (wasFocus) {
       sessions.push({ id: uid(), t: finishedAt, min: doneMin, label: (st.label || '').trim() });
       save('pomolog.sessions', sessions);
@@ -540,6 +585,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     if (st.running) {
       st.left = st.endAt - Date.now(); st.running = false; stopTick();
     } else {
+      unlockAudio();
       st.endAt = Date.now() + st.left; st.running = true; hideAway(); startTick();
       try {
         if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
@@ -549,13 +595,9 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   }
 
   $('#toggle').addEventListener('click', toggle);
-  $('#reset').addEventListener('click', function () { setMode(st.mode); });
-  $('#skip').addEventListener('click', function () {
-    var next = st.mode === 'focus' ? ((st.cycle + 1) % cfg.every === 0 ? 'long' : 'short') : 'focus';
-    if (st.mode === 'focus') st.cycle += 1;
-    setMode(next);
-  });
-  $$('.mode').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
+  $('#reset').addEventListener('click', function () { request({ type: 'reset' }); });
+  $('#skip').addEventListener('click', function () { request({ type: 'skip' }); });
+  $$('.mode').forEach(function (b) { b.addEventListener('click', function () { request({ type: 'mode', mode: b.dataset.mode }); }); });
   $('#label').addEventListener('input', function (e) { st.label = e.target.value; persist(); });
 
   $$('[data-k]').forEach(function (b) {
@@ -564,26 +606,76 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       cfg[k] = Math.min(lim[1], Math.max(lim[0], cfg[k] + Number(b.dataset.d)));
       save('pomolog.cfg', cfg);
       var note = '';
-      if (k === st.mode) { if (st.running) note = '진행 중인 타이머에는 다음 세션부터 적용됩니다.'; else st.left = total(st.mode); }
+      if (k === st.mode) { if (inProgress()) note = '진행 중인 타이머에는 다음 세션부터 적용됩니다.'; else { st.left = total(st.mode); st.dur = st.left; } }
       $('#set-note').textContent = note;
       persist(); render();
     });
   });
 
-  /* 설정 시트 */
-  var sheet = $('#sheet'), lastFocus = null;
-  function openSet() {
+  /* 시트 공통 */
+  var activeSheet = null, lastFocus = null;
+  function openSheet(el, focusEl) {
     lastFocus = document.activeElement;
-    $('#set-note').textContent = '';
-    sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+    el.classList.add('open'); el.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    $('#set-done').focus();
+    activeSheet = el;
+    if (focusEl) focusEl.focus();
   }
-  function closeSet() {
-    sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true');
+  function closeSheet(el) {
+    el.classList.remove('open'); el.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    if (activeSheet === el) activeSheet = null;
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
+
+  /* 진행 중인 집중을 실수로 날리지 않게: 확인 시트 */
+  var leave = $('#leave'), pendingAction = null, pendingMin = 0;
+  function inProgress() { return st.running || st.left < st.dur; }
+  function elapsedMs() { return Math.max(0, st.dur - remaining()); } // 일시정지 시간은 제외
+  function focusedMin() { return Math.max(1, Math.floor(elapsedMs() / 60000)); }
+  function addSession(min, at) {
+    sessions.push({ id: uid(), t: at, min: min, label: (st.label || '').trim() });
+    save('pomolog.sessions', sessions);
+    queueSync();
+  }
+  // a.type: 'mode'(탭) | 'skip' | 'reset'. record=true면 지금까지 집중한 min분을 기록하고 cycle을 올림
+  function perform(a, record, min) {
+    if (record) { addSession(min, Date.now()); st.cycle += 1; }
+    if (a.type === 'skip') {
+      var next = 'focus';
+      if (st.mode === 'focus') { if (!record) st.cycle += 1; next = st.cycle % cfg.every === 0 ? 'long' : 'short'; }
+      setMode(next);
+    } else if (a.type === 'mode') {
+      setMode(a.mode);
+    } else {
+      setMode(st.mode); // 초기화: 새 세션
+    }
+    if (record) renderStats();
+  }
+  function request(a) {
+    if (st.mode === 'focus' && elapsedMs() >= 60000) askLeave(a); else perform(a, false);
+  }
+  function askLeave(a) {
+    pendingAction = a; pendingMin = focusedMin();
+    $('#leave-sub').textContent = '지금까지 ' + pendingMin + '분 집중했어요. 기록에 남길까요?';
+    $('#lv-save').textContent = pendingMin + '분 기록하고 넘기기';
+    openSheet(leave, $('#lv-save'));
+  }
+  function endLeave(choice) {
+    var a = pendingAction, m = pendingMin; pendingAction = null;
+    closeSheet(leave);
+    if (!a || choice === 'cancel') return;
+    perform(a, choice === 'save', m);
+  }
+  $('#lv-save').addEventListener('click', function () { endLeave('save'); });
+  $('#lv-drop').addEventListener('click', function () { endLeave('drop'); });
+  $('#lv-cancel').addEventListener('click', function () { endLeave('cancel'); });
+  leave.addEventListener('click', function (e) { if (e.target === leave) endLeave('cancel'); });
+
+  /* 설정 시트 */
+  var sheet = $('#sheet');
+  function openSet() { $('#set-note').textContent = ''; openSheet(sheet, $('#set-done')); }
+  function closeSet() { closeSheet(sheet); }
   $('#open-set').addEventListener('click', openSet);
   $('#nav-set').addEventListener('click', openSet);
   $('#set-done').addEventListener('click', closeSet);
@@ -591,23 +683,35 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   $('#set-reset').addEventListener('click', function () {
     Object.keys(DEF).forEach(function (k) { cfg[k] = DEF[k]; });
     save('pomolog.cfg', cfg);
-    $('#set-note').textContent = st.running ? '진행 중인 타이머에는 다음 세션부터 적용됩니다.' : '기본값(50 / 10 / 30 / 4)으로 되돌렸습니다.';
-    if (!st.running) st.left = total(st.mode);
+    var busy = inProgress();
+    $('#set-note').textContent = busy ? '진행 중인 타이머에는 다음 세션부터 적용됩니다.' : '기본값(50 / 10 / 30 / 4)으로 되돌렸습니다.';
+    if (!busy) { st.left = total(st.mode); st.dur = st.left; }
     persist(); render();
   });
+
+  /* 키보드 */
   document.addEventListener('keydown', function (e) {
-    if (!sheet.classList.contains('open')) return;
-    if (e.key === 'Escape') { closeSet(); return; }
+    if (!activeSheet) return;
+    if (e.key === 'Escape') { if (activeSheet === leave) endLeave('cancel'); else closeSet(); return; }
     if (e.key === 'Tab') {
-      var f = Array.prototype.slice.call(sheet.querySelectorAll('button')); var first = f[0], last = f[f.length - 1];
+      var f = Array.prototype.slice.call(activeSheet.querySelectorAll('button')); var first = f[0], last = f[f.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
-
+  // 스페이스: 입력창에 있을 때와 시트가 열려 있을 때만 빼고 항상 시작/일시정지. 포커스된 버튼은 눌리지 않게 막음
+  function spaceFree(e) {
+    var t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return false;
+    return !activeSheet && !e.ctrlKey && !e.metaKey && !e.altKey;
+  }
   document.addEventListener('keydown', function (e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-    if (e.code === 'Space') { if (sheet.classList.contains('open')) return; e.preventDefault(); toggle(); }
+    if (e.code !== 'Space' || !spaceFree(e)) return;
+    e.preventDefault();
+    if (!e.repeat) toggle();
+  });
+  document.addEventListener('keyup', function (e) {
+    if (e.code === 'Space' && spaceFree(e)) e.preventDefault(); // 버튼은 keyup에서 클릭되므로 여기서도 막음
   });
   document.addEventListener('visibilitychange', function () { if (document.hidden) persist(); else reconcile(); });
   window.addEventListener('pageshow', reconcile);
@@ -698,7 +802,8 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       del.addEventListener('click', function () {
         sessions = sessions.filter(function (x) { return x !== s; });
         sy.deleted.push(s.id); saveSy();
-        save('pomolog.sessions', sessions); renderStats(); queueSync();
+        save('pomolog.sessions', sessions); renderStats();
+        showUndo(s);
       });
       right.appendChild(mn); right.appendChild(del);
       li.appendChild(left); li.appendChild(right); log.appendChild(li);
@@ -712,6 +817,28 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       $$('.range button').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
       renderStats();
     });
+  });
+  /* 삭제 되돌리기 토스트 (5초). 이 동안은 동기화를 보류해야 서버에 삭제가 기록되지 않아 되돌릴 수 있음 */
+  var undoItem = null, undoTimer = null, undoPending = false;
+  function showUndo(s) {
+    clearTimeout(undoTimer);
+    undoItem = s; undoPending = true;
+    $('#toast-text').textContent = '기록을 삭제했어요';
+    $('#toast').classList.add('show');
+    undoTimer = setTimeout(commitDelete, 5000);
+  }
+  function hideToast() { $('#toast').classList.remove('show'); }
+  function commitDelete() {
+    clearTimeout(undoTimer); undoItem = null; undoPending = false; hideToast(); queueSync();
+  }
+  $('#toast-undo').addEventListener('click', function () {
+    if (!undoItem) return;
+    var s = undoItem;
+    sessions.push(s);
+    sy.deleted = sy.deleted.filter(function (id) { return id !== s.id; }); saveSy();
+    save('pomolog.sessions', sessions);
+    clearTimeout(undoTimer); undoItem = null; undoPending = false; hideToast();
+    renderStats(); queueSync();
   });
   $('#clear').addEventListener('click', function () {
     if (confirm('모든 집중 기록을 삭제할까요? 되돌릴 수 없습니다.')) {
@@ -749,6 +876,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
   }
   function doSync() {
     if (!sy.code) return Promise.resolve(false);
+    if (undoPending) return Promise.resolve(false);
     if (syncing) { again = true; return Promise.resolve(false); }
     syncing = true;
     return sha256(sy.code).then(function (key) {
@@ -761,9 +889,11 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
       if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
     }).then(function (res) {
-      var list = (res.sessions || []).map(function (s) { return { id: String(s.id), t: Number(s.t), min: Number(s.min) || 0, label: String(s.label || '') }; });
+      var gone = (res.deleted || []).concat(sy.deleted).filter(function (id, i, arr) { return arr.indexOf(id) === i; }).slice(-2000);
+      var list = (res.sessions || []).map(function (s) { return { id: String(s.id), t: Number(s.t), min: Number(s.min) || 0, label: String(s.label || '') }; })
+        .filter(function (s) { return gone.indexOf(s.id) < 0; });
       sessions = list; save('pomolog.sessions', sessions);
-      sy.deleted = (res.deleted || []).slice(-2000); sy.last = Date.now(); saveSy();
+      sy.deleted = gone; sy.last = Date.now(); saveSy();
       renderSync(); renderStats(); setMsg('');
       return true;
     }).catch(function () {
