@@ -100,6 +100,7 @@ button { cursor: pointer; background: none; border: 0; -webkit-tap-highlight-col
 .bar { width: min(560px, 100%); height: 2px; background: var(--gray-4); position: relative; }
 .bar i { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: #f5f5f7; transition: width .25s linear; }
 
+.away { width: min(560px, 100%); margin-top: 20px; font-size: 14px; line-height: 1.5; color: #a1a1a6; text-align: center; }
 .task { width: min(560px, 100%); margin-top: 36px; }
 .task input {
   width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--gray-4);
@@ -293,6 +294,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     <p class="eyebrow" id="eyebrow"></p>
     <div class="time" id="time" role="timer" aria-live="off">50:00</div>
     <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+    <p class="away" id="away" role="status" hidden></p>
 
     <div class="task">
       <input id="label" type="text" maxlength="40" placeholder="무엇에 집중하나요?" aria-label="집중할 작업 이름" autocomplete="off">
@@ -438,7 +440,6 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
 
   function total(mode) { return cfg[mode] * 60 * 1000; }
   if (!st.left) st.left = total(st.mode);
-  if (st.running && st.endAt - Date.now() <= 0) { st.running = false; st.left = total(st.mode); }
   $('#label').value = st.label || '';
 
   function persist() { save('pomolog.timer', st); }
@@ -483,29 +484,48 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     } catch (e) {}
   }
 
-  function setMode(mode) {
+  function setMode(mode, keepNote) {
     st.mode = mode; st.running = false; st.left = total(mode); st.endAt = 0;
+    if (!keepNote) hideAway();
     stopTick(); persist(); render();
   }
+  function hideAway() { var a = $('#away'); if (a) { a.hidden = true; a.textContent = ''; } }
 
-  function complete() {
+  // away=true: 앱이 백그라운드/종료 상태일 때 이미 끝난 타이머를 돌아와서 정산하는 경우
+  function complete(away) {
     stopTick();
     var wasFocus = st.mode === 'focus';
+    var finishedAt = st.endAt && st.endAt <= Date.now() ? st.endAt : Date.now();
+    var doneMin = cfg[st.mode];
     if (wasFocus) {
-      sessions.push({ id: uid(), t: Date.now(), min: cfg.focus, label: ($('#label').value || '').trim() });
+      sessions.push({ id: uid(), t: finishedAt, min: doneMin, label: (st.label || '').trim() });
       save('pomolog.sessions', sessions);
       st.cycle += 1;
       queueSync();
     }
     var next = wasFocus ? (st.cycle % cfg.every === 0 ? 'long' : 'short') : 'focus';
-    beep();
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(wasFocus ? '집중 완료' : '휴식 끝', { body: wasFocus ? MODE_NAME[next] + ' 시간입니다.' : '다시 집중해 볼까요?' });
-      }
-    } catch (e) {}
-    setMode(next);
+    if (!away) {
+      beep();
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(wasFocus ? '집중 완료' : '휴식 끝', { body: wasFocus ? MODE_NAME[next] + ' 시간입니다.' : '다시 집중해 볼까요?' });
+        }
+      } catch (e) {}
+    }
+    setMode(next, true);
+    if (away) {
+      var a = $('#away');
+      a.textContent = '자리를 비운 사이 ' + (wasFocus ? doneMin + '분 집중이 끝났습니다. 기록에 저장했어요.' : '휴식이 끝났습니다.');
+      a.hidden = false;
+    }
     renderStats();
+  }
+
+  // 돌아왔을 때(탭 복귀, 뒤로가기 복원, 새로 로드) 타이머 상태를 현재 시각 기준으로 다시 맞춥니다.
+  function reconcile() {
+    if (st.running && st.endAt - Date.now() <= 0) { complete(true); return; }
+    if (st.running && !tick) startTick();
+    render();
   }
 
   function startTick() {
@@ -520,7 +540,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     if (st.running) {
       st.left = st.endAt - Date.now(); st.running = false; stopTick();
     } else {
-      st.endAt = Date.now() + st.left; st.running = true; startTick();
+      st.endAt = Date.now() + st.left; st.running = true; hideAway(); startTick();
       try {
         if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
       } catch (e) {}
@@ -589,7 +609,10 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
     if (e.code === 'Space') { if (sheet.classList.contains('open')) return; e.preventDefault(); toggle(); }
   });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) persist(); else reconcile(); });
+  window.addEventListener('pageshow', reconcile);
+  window.addEventListener('focus', reconcile);
+  window.addEventListener('pagehide', persist);
 
   /* Stats */
   function key(d) {
@@ -795,6 +818,7 @@ footer p { max-width: 1080px; margin: 0 auto; font-size: 12px; color: var(--gray
     setTimeout(function () { goTo(target, false); }, 0);
   }
 
+  if (st.running && st.endAt - Date.now() <= 0) complete(true);
   render(); renderStats(); renderSync(); queueSync();
   if (st.running) startTick();
 })();
